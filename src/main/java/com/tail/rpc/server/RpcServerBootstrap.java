@@ -7,6 +7,7 @@ import com.tail.rpc.model.RpcResponse;
 import com.tail.rpc.procotol.RpcDecoder;
 import com.tail.rpc.procotol.RpcEncoder;
 import com.tail.rpc.server.handler.RpcServerHandler;
+import com.tail.rpc.server.handler.RpcServerHandlerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -91,17 +92,7 @@ public class RpcServerBootstrap {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel channel) throws Exception {
-                        ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
-                        pipeline.addLast(new RpcDecoder(RpcRequest.class));
-                        pipeline.addLast(new RpcEncoder(RpcResponse.class));
-                        pipeline.addLast(new RpcServerHandler());
-                    }
-            });
-
+                .childHandler(new RpcServerHandlerInitializer());
         try {
             String[] serverAndPort = serverAddr.split(PORT_IP_SPILT);
             String host = serverAndPort[0];

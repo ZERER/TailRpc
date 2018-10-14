@@ -39,6 +39,7 @@ public class RpcConnectManager {
     }
 
 
+
     /**
      * 同步请求服务
      *
@@ -57,6 +58,7 @@ public class RpcConnectManager {
         }
         return null;
     }
+
 
 
     private RpcResponse remoteRequest(SocketAddress serverAddr, RpcRequest request) {
@@ -81,7 +83,11 @@ public class RpcConnectManager {
         return null;
     }
 
-
+    public void close(){
+        if (eventLoopGroup != null){
+            eventLoopGroup.shutdownGracefully();
+        }
+    }
 }
 
 

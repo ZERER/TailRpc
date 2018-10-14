@@ -1,13 +1,10 @@
 package com.tail.rpc.client.balance;
 
 import com.tail.rpc.client.ClientRegister;
-import com.tail.rpc.client.ServiceDiscovery;
+import com.tail.rpc.client.LocalServer;
 import com.tail.rpc.exception.RpcServiceNotFindException;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,7 +17,7 @@ public class DefaultBalance implements RpcBalance{
 
     private static AtomicInteger index = new AtomicInteger(1);
 
-    private ServiceDiscovery discovery = ServiceDiscovery.instance();
+    private LocalServer localServer = LocalServer.instance();
 
     private final ClientRegister zkClient;
 
@@ -32,11 +29,11 @@ public class DefaultBalance implements RpcBalance{
     @Override
     public InetSocketAddress select(String server) {
         List<InetSocketAddress> serverNodes;
-        if(discovery.size() > 0){
+        if(localServer.size() > 0){
             //本地查找
-            serverNodes = discovery.getService(server);
+            serverNodes = localServer.getService(server);
             if (serverNodes.size() > 0){
-                InetSocketAddress serverAddr = select(server);
+                InetSocketAddress serverAddr = select(serverNodes);
                 if (serverAddr != null){
                     return serverAddr;
                 }
@@ -45,7 +42,7 @@ public class DefaultBalance implements RpcBalance{
         //去注册中心查找服务
         serverNodes = zkClient.getServer(server);
         if (serverNodes.size() > 0){
-            InetSocketAddress serverAddr = select(server);
+            InetSocketAddress serverAddr = select(serverNodes);
             if (serverAddr != null){
                 return serverAddr;
             }
@@ -56,7 +53,7 @@ public class DefaultBalance implements RpcBalance{
     }
 
 
-    private String select(List<String> serverList){
+    private InetSocketAddress select(List<InetSocketAddress> serverList){
         if (serverList == null || serverList.size() == 0){
             throw new NullPointerException("server");
         }

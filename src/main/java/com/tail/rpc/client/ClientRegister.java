@@ -1,6 +1,7 @@
 package com.tail.rpc.client;
 
 import com.tail.rpc.constant.RpcConfiguration;
+import com.tail.rpc.util.SocketAddressUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
@@ -9,6 +10,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.*;
 
 import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
@@ -26,7 +28,7 @@ public class ClientRegister {
 
     private CuratorFramework zkClient;
 
-    private ServiceDiscovery serviceDiscovery = ServiceDiscovery.instance();
+    private LocalServer localServer = LocalServer.instance();
 
     public ClientRegister(String zkAddr){
 
@@ -60,8 +62,8 @@ public class ClientRegister {
 
             String serverNode = ZK_SPILT+serverName;
             List<String> server = zkClient.getChildren().forPath(serverNode);
-            List<InetSocketAddress> socketAddresses =  warp(server);
-            serviceDiscovery.put(serverNode, socketAddresses);
+            List<InetSocketAddress> socketAddresses = SocketAddressUtils.warp(server);
+            localServer.putServer(serverNode, socketAddresses);
             return socketAddresses;
         } catch (Exception e) {
             log.error("zookeeper获取服务失败");
@@ -70,13 +72,5 @@ public class ClientRegister {
         }
     }
 
-    private List<InetSocketAddress> warp(List<String> serverNodes) {
-        List<InetSocketAddress> socketAddresses = new LinkedList<>();
 
-        serverNodes.forEach(serverNode->{
-            String[] socketAddress = StringUtils.split(":");
-            socketAddresses.add(new InetSocketAddress(socketAddress[0],Integer.valueOf(socketAddress[1])));
-        });
-        return socketAddresses;
-    }
 }

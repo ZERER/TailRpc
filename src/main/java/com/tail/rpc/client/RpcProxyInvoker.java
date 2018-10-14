@@ -21,16 +21,18 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
 
 
     public RpcProxyInvoker(Class<T> inter, String zkAddr) {
-        manager = new RpcConnectManager(zkAddr);
         this.inter = inter;
+        manager = new RpcConnectManager(zkAddr);
     }
+
+
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         RpcRequest request = new RpcRequest();
         request.setRequestId(UUID.randomUUID().toString());
-        request.setServiceClass(method.getDeclaringClass());
+        request.setServiceClass(inter);
         request.setMethodName(method.getDeclaringClass().getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
@@ -40,4 +42,6 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
 
         return response;
     }
+
+
 }

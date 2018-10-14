@@ -9,12 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author weidong
  * @date create in 14:02 2018/10/13
  **/
-public class ServiceDiscovery {
+public class LocalServer {
 
     private final Map<String, List<InetSocketAddress>> serverMap = new ConcurrentHashMap<>();
 
 
-    public void put(String serverNode,List<InetSocketAddress> serverAddr){
+    public void putServer(String serverNode,List<InetSocketAddress> serverAddr){
         serverMap.put(serverNode,serverAddr);
     }
 
@@ -35,12 +35,12 @@ public class ServiceDiscovery {
 
     }
 
-    public static ServiceDiscovery instance(){
-        return RegisterDiscoveryClass.serviceDiscovery;
+    public static LocalServer instance(){
+        return RegisterDiscoveryClass.localServer;
     }
-    private ServiceDiscovery(){}
+    private LocalServer(){}
     static class RegisterDiscoveryClass{
-        static ServiceDiscovery serviceDiscovery = new ServiceDiscovery();
+        static LocalServer localServer = new LocalServer();
     }
 
 }
