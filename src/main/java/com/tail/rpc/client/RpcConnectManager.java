@@ -4,7 +4,10 @@ import com.tail.rpc.client.balance.DefaultBalance;
 import com.tail.rpc.client.balance.RpcBalance;
 import com.tail.rpc.client.handler.RpcClientHandler;
 import com.tail.rpc.client.handler.RpcClientInitializer;
+import com.tail.rpc.client.service.LocalServer;
+import com.tail.rpc.client.service.ServiceBean;
 import com.tail.rpc.exception.RpcConnectException;
+import com.tail.rpc.exception.RpcServiceNotFindException;
 import com.tail.rpc.model.RpcRequest;
 import com.tail.rpc.model.RpcResponse;
 import com.tail.rpc.thread.RpcThreadPool;
@@ -16,7 +19,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -26,7 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 public class RpcConnectManager {
 
-    private final RpcBalance balance;
+    private RpcBalance balance = new DefaultBalance();
 
     private final static ThreadPoolExecutor EXECUTOR = RpcThreadPool.getClientDefaultExecutor();
 
@@ -34,11 +39,18 @@ public class RpcConnectManager {
 
     private RpcClientHandler handler = new RpcClientHandler();
 
+    private  ClientRegister zkClient;
+
+    private LocalServer localServer = LocalServer.instance();
+
     public RpcConnectManager(String zkAddr) {
-        balance = new DefaultBalance(new ClientRegister(zkAddr));
+        zkClient = new ClientRegister(zkAddr);
     }
 
-
+    public RpcConnectManager(String zkAddr,RpcBalance balance) {
+        this(zkAddr);
+        this.balance = balance;
+    }
 
     /**
      * 同步请求服务
@@ -48,7 +60,7 @@ public class RpcConnectManager {
      */
     public RpcResponse handle(RpcRequest request) {
         //获取服务地址
-        SocketAddress serverAddr = balance.select(request.getServiceClass().getName());
+        SocketAddress serverAddr = getServer(request.getServiceClass().getName());
         RpcResponse response;
         try {
             response = remoteRequest(serverAddr, request);
@@ -59,6 +71,28 @@ public class RpcConnectManager {
         return null;
     }
 
+    private SocketAddress getServer(String server) {
+        if(localServer.size() > 0){
+            //本地查找
+            List<ServiceBean> serverNodes = localServer.getService(server);
+            if (serverNodes.size() > 0){
+                InetSocketAddress serverAddr = balance.select(serverNodes);
+                if (serverAddr != null){
+                    return serverAddr;
+                }
+            }
+        }
+        //去注册中心查找服务
+        List<InetSocketAddress> serverNodes = zkClient.getServer(server);
+        if (serverNodes.size() > 0){
+            InetSocketAddress serverAddr = balance.select(localServer.putServer(server,serverNodes));
+            if (serverAddr != null){
+                return serverAddr;
+            }
+        }
+
+        throw new RpcServiceNotFindException(server);
+    }
 
 
     private RpcResponse remoteRequest(SocketAddress serverAddr, RpcRequest request) {

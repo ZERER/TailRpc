@@ -1,5 +1,6 @@
 package com.tail.rpc.client;
 
+import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.constant.RpcConfiguration;
 import com.tail.rpc.util.SocketAddressUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,6 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.*;
 
 import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;

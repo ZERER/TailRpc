@@ -1,6 +1,8 @@
 package com.tail.rpc.client.balance;
 
 
+import com.tail.rpc.client.service.ServiceBean;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -12,9 +14,9 @@ public interface RpcBalance {
 
     /**
      * 负载均衡，返回负载后的提供者信息
-     * @param server 服务名
+     * @param serverBean 可用的服务
      * @return
      */
-    InetSocketAddress select(String server);
+    InetSocketAddress select(List<ServiceBean> serverBean);
 
 }
