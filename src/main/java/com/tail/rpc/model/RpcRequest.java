@@ -8,7 +8,7 @@ import lombok.Data;
  **/
 @Data
 public class RpcRequest {
-    private String requestId;
+    private String id;
     private Class<?> serviceClass;
     private String methodName;
     private Class<?>[] parameterTypes;

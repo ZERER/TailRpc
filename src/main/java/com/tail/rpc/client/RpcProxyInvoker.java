@@ -1,7 +1,6 @@
 package com.tail.rpc.client;
 
 import com.tail.rpc.model.RpcRequest;
-import com.tail.rpc.model.RpcResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
@@ -31,16 +30,14 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         RpcRequest request = new RpcRequest();
-        request.setRequestId(UUID.randomUUID().toString());
+        request.setId(UUID.randomUUID().toString());
         request.setServiceClass(inter);
         request.setMethodName(method.getDeclaringClass().getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
         log.info("调用rpc服务,请求参数:{}",request.toString());
 
-        RpcResponse response = manager.handle(request);
-
-        return response;
+        return manager.handle(request);
     }
 
 
