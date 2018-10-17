@@ -31,6 +31,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         if (future != null) {
             futureManager.removeFuture(requestId);
             future.setResult(response.getResult());
+            ctx.close();
         }
     }
 

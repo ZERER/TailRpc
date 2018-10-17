@@ -19,9 +19,9 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
     private RpcConnectManager manager;
 
 
-    public RpcProxyInvoker(Class<T> inter, String zkAddr) {
+    public RpcProxyInvoker(Class<T> inter, RpcConnectManager connectManager) {
         this.inter = inter;
-        manager = new RpcConnectManager(zkAddr);
+        manager = connectManager;
     }
 
 

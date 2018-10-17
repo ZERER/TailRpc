@@ -22,7 +22,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author weidong
@@ -33,8 +33,6 @@ public class RpcConnectManager {
 
     private RpcBalance balance = new DefaultBalance();
 
-    private final static ThreadPoolExecutor EXECUTOR = RpcThreadPool.getClientDefaultExecutor();
-
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(RpcThreadPool.THREAD_NUM);
 
     private  ClientRegister zkClient;
@@ -43,12 +41,14 @@ public class RpcConnectManager {
 
     private RpcFutureManager futureManager =RpcFutureManager.instance();
 
-    public RpcConnectManager(String zkAddr) {
-        zkClient = new ClientRegister(zkAddr);
+
+    public RpcConnectManager(ClientRegister zkClient) {
+        this.zkClient = zkClient;
+        zkClient.connect();
     }
 
-    public RpcConnectManager(String zkAddr,RpcBalance balance) {
-        this(zkAddr);
+    public RpcConnectManager(ClientRegister zkClient,RpcBalance balance) {
+        this(zkClient);
         this.balance = balance;
     }
 
@@ -58,17 +58,15 @@ public class RpcConnectManager {
      * @param request rpc请求体
      * @return 返回结果
      */
-    public Object handle(RpcRequest request) {
-        //获取服务地址
-        SocketAddress serverAddr = getServer(request.getServiceClass().getName());
-        try {
-            return remoteRequest(serverAddr, request).get();
-        } catch (Exception e) {
-            log.error("请求失败");
-        }
-        return null;
+    public Object handle(RpcRequest request) throws ExecutionException, InterruptedException {
+        return remoteRequest(getServer(request.getServiceClass().getName()), request).get();
     }
 
+    /**
+     * 查找服务地址，先本地后远程
+     * @param server 请求服务名字
+     * @return 请求地址
+     */
     private SocketAddress getServer(String server) {
         if(localServer.size() > 0){
             //本地查找
@@ -81,9 +79,9 @@ public class RpcConnectManager {
             }
         }
         //去注册中心查找服务
-        List<InetSocketAddress> serverNodes = zkClient.getServer(server);
+        List<ServiceBean> serverNodes = zkClient.getServer(server);
         if (serverNodes.size() > 0){
-            InetSocketAddress serverAddr = balance.select(localServer.putServer(server,serverNodes));
+            InetSocketAddress serverAddr = balance.select(serverNodes);
             if (serverAddr != null){
                 return serverAddr;
             }
@@ -92,12 +90,17 @@ public class RpcConnectManager {
         throw new RpcServiceNotFindException(server);
     }
 
-
+    /**
+     * 打开netty连接，远程调用RPC服务
+     * @param serverAddr 请求地址
+     * @param request 请求体
+     * @return future
+     */
     private RpcFuture remoteRequest(SocketAddress serverAddr, RpcRequest request) {
         RpcFuture future = new RpcFuture(request);
         futureManager.putRpcFuture(request.getId(),future);
 
-        EXECUTOR.submit(() -> {
+        RpcClient.submit(() -> {
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
             try {
@@ -128,6 +131,10 @@ public class RpcConnectManager {
     public void close(){
         if (eventLoopGroup != null){
             eventLoopGroup.shutdownGracefully();
+        }
+
+        if (zkClient != null){
+            zkClient.close();
         }
     }
 }
