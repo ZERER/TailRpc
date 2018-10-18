@@ -31,8 +31,8 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
 
         RpcRequest request = new RpcRequest();
         request.setId(UUID.randomUUID().toString());
-        request.setServiceClass(inter);
-        request.setMethodName(method.getDeclaringClass().getName());
+        request.setService(inter);
+        request.setMethod(method);
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
         log.info("调用rpc服务,请求参数:{}",request.toString());

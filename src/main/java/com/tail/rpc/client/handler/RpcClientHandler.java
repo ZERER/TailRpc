@@ -26,7 +26,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
-        String requestId = response.getRequestId();
+        String requestId = response.getId();
         RpcFuture future = futureManager.getRpcFuture(requestId);
         if (future != null) {
             futureManager.removeFuture(requestId);

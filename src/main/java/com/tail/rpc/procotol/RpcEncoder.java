@@ -7,6 +7,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * protostuff编码器
  * @author weidong
  * @date Create in 11:55 2018/10/12
  **/

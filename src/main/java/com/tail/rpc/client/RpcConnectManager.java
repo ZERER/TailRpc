@@ -59,7 +59,7 @@ public class RpcConnectManager {
      * @return 返回结果
      */
     public Object handle(RpcRequest request) throws ExecutionException, InterruptedException {
-        return remoteRequest(getServer(request.getServiceClass().getName()), request).get();
+        return remoteRequest(getServer(request.getService().getName()), request).get();
     }
 
     /**

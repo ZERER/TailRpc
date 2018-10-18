@@ -8,8 +8,20 @@ import lombok.Data;
  **/
 @Data
 public class RpcResponse {
-    private String requestId;
+    /**
+     * 请求id,与RPCRequest的id对应
+     */
+    private String id;
+    /**
+     * 返回状态
+     */
     private boolean status;
+    /**
+     * 错误信息
+     */
     private String error;
+    /**
+     * 返回结果
+     */
     private Object result;
 }

@@ -29,13 +29,13 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) throws Exception {
         pool.submit(()->{
-            log.debug("接受RPC请求 请求id:{}", request.getRequestId());
+            log.debug("接受RPC请求 请求id:{}", request.getId());
             //由线程池处理
             RpcResponse response = requestHandler(request);
             ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    log.debug("请求处理完成 请求id:{}" , request.getRequestId());
+                    log.debug("请求处理完成 请求id:{}" , request.getId());
                 }
             });
         });
@@ -54,13 +54,13 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     private RpcResponse requestHandler(RpcRequest request){
         RpcResponse response = new RpcResponse();
 
-        String requestId = request.getRequestId();
-        Class<?> serviceClass = request.getServiceClass();
-        String methodName = request.getMethodName();
+        String id = request.getId();
+        Class<?> serviceClass = request.getService();
+        Method method = request.getMethod();
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-        log.info("调用:{}的方法{}:",serviceClass.getName(),methodName);
+        log.info("调用:{}的方法{}:",serviceClass.getName(),method.getName());
         log.info("方法参数类型");
         for (Class<?> type  : parameterTypes ){
             log.info(type.getName()+" ");
@@ -71,12 +71,12 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
         }
 
 
-        response.setRequestId(requestId);
+        response.setId(id);
 
         Object serviceBean = serviceCenter.getService(serviceClass);
 
         try {
-            Method invoker = serviceClass.getMethod(methodName,parameterTypes);
+            Method invoker = serviceClass.getMethod(method.getName(),parameterTypes);
             invoker.setAccessible(true);
             Object result = invoker.invoke(serviceBean,parameters);
             response.setResult(result);

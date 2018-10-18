@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
+ * protostuff解码器
  * @author weidong
  * @date Create in 11:55 2018/10/12
  **/
