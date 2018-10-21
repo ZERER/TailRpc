@@ -15,6 +15,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+
 /**
  * @author weidong
  * @date Create in 11:58 2018/10/12
@@ -73,18 +75,19 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
         response.setId(id);
 
-        Object serviceBean = serviceCenter.getService(serviceClass);
+        Object serviceBean = serviceCenter.getService(serviceClass.getName()+ZK_SPILT+request.getServerName());
 
         try {
             Method invoker = serviceClass.getMethod(method.getName(),parameterTypes);
             invoker.setAccessible(true);
             Object result = invoker.invoke(serviceBean,parameters);
+            log.info("执行结果:{}",request);
             response.setResult(result);
-            response.setStatus(true);
+            response.setSuccess(true);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("处理异常，原因",e.getMessage());
-            response.setError(e.getMessage());
-            response.setStatus(false);
+            response.setError(e);
+            response.setSuccess(false);
         }
         return response;
     }

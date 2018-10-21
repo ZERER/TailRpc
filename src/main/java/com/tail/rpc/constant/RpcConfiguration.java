@@ -17,4 +17,7 @@ public class RpcConfiguration {
     public static final String ZK_SPILT = "/";
 
 
+    public static final String DEFAULT_SERVER_NAME = "default";
+
+
 }

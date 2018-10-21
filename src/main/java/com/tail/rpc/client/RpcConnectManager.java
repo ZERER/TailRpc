@@ -41,6 +41,7 @@ public class RpcConnectManager {
 
     private RpcFutureManager futureManager =RpcFutureManager.instance();
 
+    private String serverName;
 
     public RpcConnectManager(ClientRegister zkClient) {
         this.zkClient = zkClient;
@@ -137,6 +138,7 @@ public class RpcConnectManager {
             zkClient.close();
         }
     }
+
 }
 
 

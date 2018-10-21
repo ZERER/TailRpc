@@ -5,12 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.api.GetChildrenBuilder;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -64,13 +61,13 @@ public class ServerRegister {
 
 
         log.info("zk 正在注册服务");
-        Set<Class<?>> serverSet = serviceList.getServiceName();
-        for (Class<?> service : serverSet){
+        Set<String> serverSet = serviceList.getServiceName();
+        for (String service : serverSet){
             zkClient.create()
                     .creatingParentsIfNeeded()
                     .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
-                    .forPath(ZK_SPILT+service.getName()+ZK_SPILT+SERVER_NAME,this.data.getBytes());
-            log.info("create zookeeper node :{}",service.getName());
+                    .forPath(ZK_SPILT+service.split(ZK_SPILT)[0]+ZK_SPILT+SERVER_NAME,this.data.getBytes());
+            log.info("create zookeeper node :{}",service);
         }
 
 

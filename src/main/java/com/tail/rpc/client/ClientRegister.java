@@ -11,6 +11,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,10 +57,14 @@ public class ClientRegister {
     public List<ServiceBean> getServer(String serverName) {
         try {
 
-            String serverNode = ZK_SPILT+serverName;
-            List<String> server = zkClient.getChildren().forPath(serverNode);
-            List<InetSocketAddress> socketAddresses = SocketAddressUtils.warp(server);
-            return localServer.putServer(serverNode, socketAddresses);
+            List<String> serverNames = zkClient.getChildren().forPath(ZK_SPILT+serverName);
+            List<String> values = new ArrayList<>(serverNames.size());
+            for (String name : serverNames){
+                values.add(new String(zkClient.getData().forPath(ZK_SPILT+serverName+ZK_SPILT+name)));
+            }
+
+            List<InetSocketAddress> socketAddresses = SocketAddressUtils.warp(values);
+            return localServer.putServer(serverName, socketAddresses);
         } catch (Exception e) {
             log.error("zookeeper获取服务失败");
             return Collections.emptyList();

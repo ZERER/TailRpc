@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+
 /**
  * @author weidong
  * @date Create in 15:32 2018/10/11
@@ -15,14 +17,14 @@ import java.util.Set;
 @Slf4j
 public class ServiceCenter {
 
-    private final Map<Class<?>,Object> serverMap = new HashMap<>();
+    private final Map<String,Object> serverMap = new HashMap<>();
 
 
-    public boolean containsServer(Class<?> interfaceClass){
+    public boolean containsServer(String interfaceClass){
         return serverMap.containsKey(interfaceClass);
     }
 
-    public void addService(Object server){
+    public void addService(Object server,String serverName){
         if (server == null){
             throw new NullPointerException("server");
         }
@@ -35,30 +37,31 @@ public class ServiceCenter {
         if (interfaceClass.length != 1){
             throw new RuntimeException("不合理的服务提供者");
         }
-        addService(interfaceClass[0], server);
+        addService(interfaceClass[0], server,serverName);
     }
 
 
-    public void addService(Class<?> interfaceClass, Object server) {
+    public void addService(Class<?> interfaceClass, Object server,String serverName) {
         if (server == null || interfaceClass == null){
             throw new NullPointerException("server or interface");
         }
+        String fullServerName = interfaceClass.getName()+ZK_SPILT+serverName;
         hasRpcAnnotation(server.getClass());
-        if (containsServer(interfaceClass)) {
+        if (containsServer(fullServerName)) {
             throw new RpcException("服务已存在");
         }
-        serverMap.put(interfaceClass, server);
+        serverMap.put(fullServerName, server);
     }
 
     public int size(){
         return serverMap.size();
     }
 
-    public Set<Class<?>> getServiceName(){
+    public Set<String> getServiceName(){
         return serverMap.keySet();
     }
 
-    public Object getService(Class<?> key){
+    public Object getService(String key){
         return serverMap.get(key);
     }
 

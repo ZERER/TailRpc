@@ -2,19 +2,17 @@ package com.tail.rpc.server;
 
 import com.tail.rpc.constant.RpcConfiguration;
 import com.tail.rpc.exception.RpcException;
-import com.tail.rpc.model.RpcRequest;
-import com.tail.rpc.model.RpcResponse;
-import com.tail.rpc.procotol.RpcDecoder;
-import com.tail.rpc.procotol.RpcEncoder;
-import com.tail.rpc.server.handler.RpcServerHandler;
 import com.tail.rpc.server.handler.RpcServerHandlerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.tail.rpc.constant.RpcConfiguration.DEFAULT_SERVER_NAME;
 
 
 /**
@@ -28,7 +26,11 @@ public class RpcServerBootstrap {
      * example 127.0.0.1:8080
      */
     private String serverAddr;
-
+    /**
+     * 服务提供者服务名
+     * example HelloServer
+     */
+    private String serverName = DEFAULT_SERVER_NAME;
     /**
      * 注册中心地址,默认为RpcConfiguration.ZK_ADDR
      * @see RpcConfiguration
@@ -60,18 +62,23 @@ public class RpcServerBootstrap {
         return this;
     }
 
-    public RpcServerBootstrap server(String serverAddr){
+    public RpcServerBootstrap serverAddr(String serverAddr){
         this.serverAddr = serverAddr;
         return this;
     }
 
     public RpcServerBootstrap addService(Object service){
-        serviceCenter.addService(service);
+        serviceCenter.addService(service,serverName);
         return this;
     }
 
     public RpcServerBootstrap addService(Class<?> interfaceClass,Object service){
-        serviceCenter.addService(interfaceClass,service);
+        serviceCenter.addService(interfaceClass,service,serverName);
+        return this;
+    }
+
+    public RpcServerBootstrap serverName(String serverName){
+        this.serverName = serverName;
         return this;
     }
 
@@ -96,7 +103,7 @@ public class RpcServerBootstrap {
         try {
             String[] serverAndPort = serverAddr.split(PORT_IP_SPILT);
             String host = serverAndPort[0];
-            Integer port = new Integer(serverAndPort[1]);
+            Integer port = Integer.valueOf(serverAndPort[1]);
 
             //netty start
             ChannelFuture future = bootstrap.bind(host, port).sync();

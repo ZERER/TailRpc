@@ -6,11 +6,11 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
-import javax.xml.transform.Source;
 import java.util.List;
 
 import static com.tail.rpc.constant.RpcConfiguration.ZK_ADDR;
 import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
+import static java.lang.Thread.sleep;
 
 /**
  * @author weidong
@@ -33,11 +33,13 @@ public class ZKTest {
             System.out.println(node);
             List<String> server = zkClient.getChildren().forPath("/"+node);
             System.out.println(server);
-            System.out.println(server.get(0));
-            System.out.println(server.size());
+
 
 
         }
+
+
+        sleep(100000000);
 
     }
 }

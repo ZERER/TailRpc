@@ -12,6 +12,6 @@ public class HelloServiceImpl implements HelloService {
     @Override
     public String hello(Integer x) {
         System.out.println("hello " + x);
-        return "hello";
+        return "RPC Server";
     }
 }

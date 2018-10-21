@@ -1,9 +1,6 @@
 package com.tail.rpc.util;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,7 +11,7 @@ import java.util.List;
 public class SocketAddressUtils {
 
     public static InetSocketAddress warp(String internetAddress){
-        String[] socketAddress = StringUtils.split(":");
+        String[] socketAddress = internetAddress.split(":");
         InetSocketAddress address = new InetSocketAddress(socketAddress[0],Integer.valueOf(socketAddress[1]));
         return address;
     }

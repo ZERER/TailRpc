@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author weidong
@@ -14,29 +15,26 @@ import java.util.UUID;
 @Slf4j
 public class RpcProxyInvoker<T> implements InvocationHandler {
 
-    private Class<T> inter;
+    private RpcRequest request = new RpcRequest();
 
     private RpcConnectManager manager;
 
 
-    public RpcProxyInvoker(Class<T> inter, RpcConnectManager connectManager) {
-        this.inter = inter;
-        manager = connectManager;
+    public RpcProxyInvoker(Class<T> inter, RpcConnectManager connectManager,long timeOut,TimeUnit unit,String serverName) {
+        this.manager = connectManager;
+        this.request.setId(UUID.randomUUID().toString());
+        this.request.setTimeOut(timeOut);
+        this.request.setUnit(unit);
+        this.request.setService(inter);
+        this.request.setServerName(serverName);
     }
-
-
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-        RpcRequest request = new RpcRequest();
-        request.setId(UUID.randomUUID().toString());
-        request.setService(inter);
-        request.setMethod(method);
-        request.setParameterTypes(method.getParameterTypes());
-        request.setParameters(args);
+        this.request.setMethod(method);
+        this.request.setParameterTypes(method.getParameterTypes());
+        this.request.setParameters(args);
         log.info("调用rpc服务,请求参数:{}",request.toString());
-
         return manager.handle(request);
     }
 

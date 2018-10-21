@@ -15,11 +15,11 @@ public class RpcResponse {
     /**
      * 返回状态
      */
-    private boolean status;
+    private boolean success;
     /**
      * 错误信息
      */
-    private String error;
+    private Exception error;
     /**
      * 返回结果
      */

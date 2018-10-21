@@ -3,6 +3,7 @@ package com.tail.rpc.model;
 import lombok.Data;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author weidong
@@ -14,6 +15,11 @@ public class RpcRequest {
      * 请求id
      */
     private String id;
+
+    /**
+     * 服务名
+     */
+    private String serverName;
     /**
      * 请求的class对象
      */
@@ -30,4 +36,12 @@ public class RpcRequest {
      * 请求参数值
      */
     private Object[] parameters;
+    /**
+     * 请求时间
+     */
+    private long timeOut;
+    /**
+     * 请求时间单位
+     */
+    private TimeUnit unit = TimeUnit.MILLISECONDS;
 }
