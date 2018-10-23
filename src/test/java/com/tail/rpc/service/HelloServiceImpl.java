@@ -11,6 +11,11 @@ import com.tail.rpc.annotation.RpcService;
 public class HelloServiceImpl implements HelloService {
     @Override
     public String hello(Integer x) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("hello " + x);
         return "RPC Server";
     }

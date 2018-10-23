@@ -2,7 +2,6 @@ package com.tail.rpc.model;
 
 import lombok.Data;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,11 +22,11 @@ public class RpcRequest {
     /**
      * 请求的class对象
      */
-    private Class<?> service;
+    private String className;
     /**
      * 方法名
      */
-    private Method method;
+    private String methodName;
     /**
      * 请求参数类型
      */

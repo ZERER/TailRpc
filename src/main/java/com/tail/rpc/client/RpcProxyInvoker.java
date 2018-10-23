@@ -25,13 +25,13 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
         this.request.setId(UUID.randomUUID().toString());
         this.request.setTimeOut(timeOut);
         this.request.setUnit(unit);
-        this.request.setService(inter);
+        this.request.setClassName(inter.getSimpleName());
         this.request.setServerName(serverName);
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        this.request.setMethod(method);
+        this.request.setMethodName(method.getName());
         this.request.setParameterTypes(method.getParameterTypes());
         this.request.setParameters(args);
         log.info("调用rpc服务,请求参数:{}",request.toString());

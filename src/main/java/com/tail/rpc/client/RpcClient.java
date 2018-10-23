@@ -3,6 +3,7 @@ package com.tail.rpc.client;
 
 import com.tail.rpc.thread.RpcThreadPool;
 
+import java.io.Closeable;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ import static com.tail.rpc.constant.RpcConfiguration.ZK_ADDR;
  * @author weidong
  * @date create in 12:29 2018/10/13
  **/
-public class RpcClient {
+public class RpcClient implements Closeable {
     /**
      * 保证一个注册中心一个Connect
      */
@@ -78,6 +79,7 @@ public class RpcClient {
         return connectManager;
     }
 
+    @Override
     public void close(){
         ZK_MANAGER.forEach((zk,manage)-> manage.close());
         EXECUTOR.shutdown();

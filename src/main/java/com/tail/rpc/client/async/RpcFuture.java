@@ -1,20 +1,19 @@
 package com.tail.rpc.client.async;
 
+import com.tail.rpc.exception.RpcTimeOutException;
 import com.tail.rpc.model.RpcRequest;
 import com.tail.rpc.model.RpcResponse;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author weidong
  * @date create in 20:18 2018/10/16
  **/
 @Slf4j
-public class RpcFuture implements Future<Object> {
+public class RpcFuture implements Future<RpcResponse> {
     /**
      * 请求体
      */
@@ -49,29 +48,25 @@ public class RpcFuture implements Future<Object> {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        try {
-            return get(request.getTimeOut(),request.getUnit());
-        } catch (TimeoutException e) {
-            throw new ExecutionException(e);
-        }
+    public RpcResponse get() throws InterruptedException {
+        return get(request.getTimeOut(),request.getUnit());
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public RpcResponse get(long timeout, TimeUnit unit) throws InterruptedException {
         if(sync.tryAcquireNanos(1, unit.toNanos(timeout))){
-            if (response.isSuccess()){
-                return response.getResult();
-            }else {
-                throw new ExecutionException(response.getError());
-            }
+            return response;
         }
         log.error("Id :{} , ClassName : {} , MethodName : {} , ParameterType : {} , Parameter : {}" +
                         " RequestTimeOut . TimeOut : {} TimeUnit : {} ",
-                request.getId(), request.getService(),
+                request.getId(), request.getClassName(),request.getMethodName(),
                 request.getParameterTypes(), request.getParameters(),
                 timeout , unit.toString());
-        throw new TimeoutException("execute time out");
+
+        response =new RpcResponse();
+        response.setSuccess(false);
+        response.setError(new RpcTimeOutException("requestId = "+request.getId() + "request TimeOut, timeout : "+request.getTimeOut() + ", TimeUnit : " + request.getUnit().toString()));
+        return response;
     }
 
     public void setResponse(RpcResponse response){

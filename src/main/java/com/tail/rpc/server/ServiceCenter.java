@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
 
 /**
  * @author weidong
@@ -45,7 +45,7 @@ public class ServiceCenter {
         if (server == null || interfaceClass == null){
             throw new NullPointerException("server or interface");
         }
-        String fullServerName = interfaceClass.getName()+ZK_SPILT+serverName;
+        String fullServerName = interfaceClass.getSimpleName()+STR_SPILT+serverName;
         hasRpcAnnotation(server.getClass());
         if (containsServer(fullServerName)) {
             throw new RpcException("服务已存在");

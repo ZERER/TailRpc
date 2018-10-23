@@ -10,6 +10,7 @@ import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.client.service.ServiceBean;
 import com.tail.rpc.exception.RpcServiceNotFindException;
 import com.tail.rpc.model.RpcRequest;
+import com.tail.rpc.model.RpcResponse;
 import com.tail.rpc.thread.RpcThreadPool;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -22,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author weidong
@@ -59,8 +59,12 @@ public class RpcConnectManager {
      * @param request rpc请求体
      * @return 返回结果
      */
-    public Object handle(RpcRequest request) throws ExecutionException, InterruptedException {
-        return remoteRequest(getServer(request.getService().getName()), request).get();
+    public Object handle(RpcRequest request) throws Exception {
+        RpcResponse response = remoteRequest(getServer(request.getClassName()), request).get();
+        if (response.isSuccess()){
+            return response.getResult();
+        }
+        throw new Exception(response.getError());
     }
 
     /**

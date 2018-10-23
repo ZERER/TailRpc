@@ -11,6 +11,7 @@ import org.apache.zookeeper.CreateMode;
 import java.util.List;
 import java.util.Set;
 
+import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
 import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
 import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
 
@@ -66,7 +67,7 @@ public class ServerRegister {
             zkClient.create()
                     .creatingParentsIfNeeded()
                     .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
-                    .forPath(ZK_SPILT+service.split(ZK_SPILT)[0]+ZK_SPILT+SERVER_NAME,this.data.getBytes());
+                    .forPath(ZK_SPILT+service.split(STR_SPILT)[0]+ZK_SPILT+SERVER_NAME,this.data.getBytes());
             log.info("create zookeeper node :{}",service);
         }
 

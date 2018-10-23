@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
  **/
 public class HelloClient {
     public static void main(String[] args) {
-        HelloService service = new RpcClient("118.25.45.237:2181")
-                .setRequestTimeOut(10, TimeUnit.SECONDS)
-                .create(HelloService.class);
+        RpcClient client = new RpcClient("118.25.45.237:2181")
+                .setRequestTimeOut(10, TimeUnit.SECONDS);
+        HelloService service = client.create(HelloService.class);
         String result = service.hello(10);
         System.out.println("result = " + result);
-
+        client.close();
     }
 }

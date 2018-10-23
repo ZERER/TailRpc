@@ -10,12 +10,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
 
 /**
  * @author weidong
@@ -57,12 +56,18 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
         RpcResponse response = new RpcResponse();
 
         String id = request.getId();
-        Class<?> serviceClass = request.getService();
-        Method method = request.getMethod();
+        String className = request.getClassName();
+        String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-        log.info("调用:{}的方法{}:",serviceClass.getName(),method.getName());
+
+
+
+        response.setId(id);
+
+        Object serviceBean = serviceCenter.getService(className+STR_SPILT+request.getServerName());
+        log.info("调用:{}的方法{}:",serviceBean.getClass().getName(),methodName);
         log.info("方法参数类型");
         for (Class<?> type  : parameterTypes ){
             log.info(type.getName()+" ");
@@ -72,13 +77,8 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
             log.info(param+" ");
         }
 
-
-        response.setId(id);
-
-        Object serviceBean = serviceCenter.getService(serviceClass.getName()+ZK_SPILT+request.getServerName());
-
         try {
-            Method invoker = serviceClass.getMethod(method.getName(),parameterTypes);
+            Method invoker = serviceBean.getClass().getMethod(methodName,parameterTypes);
             invoker.setAccessible(true);
             Object result = invoker.invoke(serviceBean,parameters);
             log.info("执行结果:{}",request);
