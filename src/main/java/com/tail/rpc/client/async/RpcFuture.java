@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @date create in 20:18 2018/10/16
  **/
 @Slf4j
-public class RpcFuture implements Future<RpcResponse> {
+public class RpcFuture implements Future<Object> {
     /**
      * 请求体
      */
@@ -48,25 +48,21 @@ public class RpcFuture implements Future<RpcResponse> {
     }
 
     @Override
-    public RpcResponse get() throws InterruptedException {
+    public Object get() throws InterruptedException {
         return get(request.getTimeOut(),request.getUnit());
     }
 
     @Override
-    public RpcResponse get(long timeout, TimeUnit unit) throws InterruptedException {
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException {
         if(sync.tryAcquireNanos(1, unit.toNanos(timeout))){
-            return response;
-        }
-        log.error("Id :{} , ClassName : {} , MethodName : {} , ParameterType : {} , Parameter : {}" +
-                        " RequestTimeOut . TimeOut : {} TimeUnit : {} ",
-                request.getId(), request.getClassName(),request.getMethodName(),
-                request.getParameterTypes(), request.getParameters(),
-                timeout , unit.toString());
+            if (response.isSuccess()){
+                return this.response.getResult();
+            }
 
-        response =new RpcResponse();
-        response.setSuccess(false);
-        response.setError(new RpcTimeOutException("requestId = "+request.getId() + "request TimeOut, timeout : "+request.getTimeOut() + ", TimeUnit : " + request.getUnit().toString()));
-        return response;
+            throw new InterruptedException(response.getError().getMessage());
+        }
+        throw new RpcTimeOutException("requestId = "+request.getId() + "request TimeOut, timeout : "+request.getTimeOut() + ", TimeUnit : " + request.getUnit().toString());
+
     }
 
     public void setResponse(RpcResponse response){
