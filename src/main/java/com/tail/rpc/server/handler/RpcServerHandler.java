@@ -2,9 +2,8 @@ package com.tail.rpc.server.handler;
 
 import com.tail.rpc.model.RpcRequest;
 import com.tail.rpc.model.RpcResponse;
-import com.tail.rpc.server.ServiceCenter;
+import com.tail.rpc.server.RpcConfiguration;
 import com.tail.rpc.thread.RpcThreadPool;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -14,8 +13,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
-
 /**
  * @author weidong
  * @date Create in 11:58 2018/10/12
@@ -23,22 +20,23 @@ import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
 @Slf4j
 public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
-    private ServiceCenter serviceCenter = ServiceCenter.instance();
+    private final RpcConfiguration configuration;
+
+
+    public RpcServerHandler(RpcConfiguration configuration){
+        this.configuration = configuration;
+    }
 
     private ThreadPoolExecutor pool = RpcThreadPool.getServerDefaultExecutor();
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request)  {
         pool.submit(()->{
             log.debug("接受RPC请求 请求id:{}", request.getId());
             //由线程池处理
             RpcResponse response = requestHandler(request);
-            ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    log.debug("请求处理完成 请求id:{}" , request.getId());
-                }
-            });
+            ctx.writeAndFlush(response).addListener((ChannelFutureListener) channelFuture ->
+                    log.debug("请求处理完成 请求id:{}" , request.getId()));
         });
     }
 
@@ -53,7 +51,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
      * @return 处理结果
      */
     private RpcResponse requestHandler(RpcRequest request){
-        RpcResponse response = new RpcResponse();
 
         String id = request.getId();
         String className = request.getClassName();
@@ -61,12 +58,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
         Class<?>[] parameterTypes = request.getParameterTypes();
         Object[] parameters = request.getParameters();
 
-
-
-
-        response.setId(id);
-
-        Object serviceBean = serviceCenter.getService(className+STR_SPILT+request.getServerName());
+        Object serviceBean = configuration.getServiceMap().get(className);
         log.info("调用:{}的方法{}:",serviceBean.getClass().getName(),methodName);
         log.info("方法参数类型");
         for (Class<?> type  : parameterTypes ){
@@ -76,8 +68,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
         for (Object param  : parameters ){
             log.info(param+" ");
         }
-
+        RpcResponse response = new RpcResponse();
+        response.setId(id);
         try {
+
+
             Method invoker = serviceBean.getClass().getMethod(methodName,parameterTypes);
             invoker.setAccessible(true);
             Object result = invoker.invoke(serviceBean,parameters);

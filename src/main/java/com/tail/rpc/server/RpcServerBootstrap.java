@@ -1,7 +1,5 @@
 package com.tail.rpc.server;
 
-import com.tail.rpc.constant.RpcConfiguration;
-import com.tail.rpc.exception.RpcException;
 import com.tail.rpc.server.handler.RpcServerHandlerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -12,7 +10,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.tail.rpc.constant.RpcConfiguration.DEFAULT_SERVER_NAME;
+import java.net.InetSocketAddress;
+
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.STR_SPILT;
 
 
 /**
@@ -21,26 +21,11 @@ import static com.tail.rpc.constant.RpcConfiguration.DEFAULT_SERVER_NAME;
  **/
 @Slf4j
 public class RpcServerBootstrap {
-    /**
-     * 服务提供者ip:端口号
-     * example 127.0.0.1:8080
-     */
-    private String serverAddr;
-    /**
-     * 服务提供者服务名
-     * example HelloServer
-     */
-    private String serverName = DEFAULT_SERVER_NAME;
-    /**
-     * 注册中心地址,默认为RpcConfiguration.ZK_ADDR
-     * @see RpcConfiguration
-     */
-    private String registerAddr = RpcConfiguration.ZK_ADDR;
 
-    /**
-     * 提供外部访问的服务中心
-     */
-    private ServiceCenter serviceCenter = ServiceCenter.instance();
+//    /**
+//     * 提供外部访问的服务中心
+//     */
+//    private ServiceCenter serviceCenter = ServiceCenter.instance();
 
     /**
      * 是否运行
@@ -48,39 +33,18 @@ public class RpcServerBootstrap {
     private boolean running = false;
 
     /**
+     * 服务端运行配置文件
+     */
+    private RpcConfiguration configuration;
+
+    /**
      * zookeeper操作
      */
     private ServerRegister zkClient;
+
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-
-    private final static String PORT_IP_SPILT = ":";
-
-    public RpcServerBootstrap register(String registerAddr){
-        this.registerAddr = registerAddr;
-        return this;
-    }
-
-    public RpcServerBootstrap serverAddr(String serverAddr){
-        this.serverAddr = serverAddr;
-        return this;
-    }
-
-    public RpcServerBootstrap addService(Object service){
-        serviceCenter.addService(service,serverName);
-        return this;
-    }
-
-    public RpcServerBootstrap addService(Class<?> interfaceClass,Object service){
-        serviceCenter.addService(interfaceClass,service,serverName);
-        return this;
-    }
-
-    public RpcServerBootstrap serverName(String serverName){
-        this.serverName = serverName;
-        return this;
-    }
 
     /**
      * 启动服务
@@ -90,7 +54,10 @@ public class RpcServerBootstrap {
             log.warn("服务已经启动");
             return;
         }
-        check();
+        if (configuration.getServiceSize() == 0){
+            throw new NullPointerException("service");
+        }
+
         log.info("rpc服务正在启动...");
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
@@ -99,20 +66,16 @@ public class RpcServerBootstrap {
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childHandler(new RpcServerHandlerInitializer());
+                .childHandler(new RpcServerHandlerInitializer(configuration));
         try {
-            String[] serverAndPort = serverAddr.split(PORT_IP_SPILT);
-            String host = serverAndPort[0];
-            Integer port = Integer.valueOf(serverAndPort[1]);
-
             //netty start
-            ChannelFuture future = bootstrap.bind(host, port).sync();
+            ChannelFuture future = bootstrap.bind(this.configuration.getServerAddr()).sync();
 
             //zookeeper register
-            zkClient = new ServerRegister(this.registerAddr);
-            zkClient.setData(serverAddr);
+            zkClient = new ServerRegister(this.configuration);
             zkClient.connect();
             log.info("rpc服务已经启动...");
+            this.running = true;
             future.channel().closeFuture().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -124,7 +87,7 @@ public class RpcServerBootstrap {
         } finally {
             stop();
         }
-        this.running = true;
+
     }
 
     public void stop(){
@@ -135,11 +98,69 @@ public class RpcServerBootstrap {
         zkClient.close();
     }
 
-    private void check() {
-        if(serverAddr == null || registerAddr == null || serviceCenter.size() == 0){
-            log.error("serverAddr="+serverAddr+",registerAddr="+registerAddr+",serverCenter数量为"+serviceCenter.size());
-            throw new RpcException("不完整的参数");
+
+    public RpcServerBootstrap(){
+        this.configuration = new RpcConfiguration();
+    }
+
+    public RpcServerBootstrap(String zkAddr){
+        this();
+        this.configuration.setZkAddr(zkAddr);
+    }
+    public RpcServerBootstrap(RpcConfiguration configuration){
+        if (configuration == null){
+            throw new NullPointerException("configuration");
         }
+        this.configuration = configuration;
+    }
+
+    public RpcServerBootstrap register(String zkAddr){
+        this.configuration.setZkAddr(zkAddr);
+        return this;
+    }
+
+    public RpcServerBootstrap serverAddr(String serverAddr){
+        String[] addrAndPort = serverAddr.split(STR_SPILT);
+        if (addrAndPort.length <= 0){
+            throw new RuntimeException("ip地址格式不正确");
+        }
+        return this.serverAddr(addrAndPort[0],Integer.valueOf(addrAndPort[1]));
+    }
+
+    public RpcServerBootstrap serverAddr(InetSocketAddress serverAddr){
+        this.configuration.setServerAddr(serverAddr);
+        return this;
+    }
+
+    public RpcServerBootstrap serverAddr(String hostname,Integer port){
+        InetSocketAddress address = new InetSocketAddress(hostname,port);
+        return this.serverAddr(address);
+    }
+
+
+    public RpcServerBootstrap serverName(String serverName){
+        this.configuration.setServerName(serverName);
+        return this;
+    }
+
+
+    public RpcConfiguration getConfiguration(){
+        return this.configuration;
+    }
+
+    public RpcServerBootstrap addService(Object service) {
+        this.configuration.addService(service);
+        return this;
+    }
+
+    public RpcServerBootstrap addService(String serviceName,Object service) {
+        this.configuration.addService(serviceName,service);
+        return this;
+    }
+
+    public RpcServerBootstrap addService(Class<?> rpcInterface,Object service) {
+        this.configuration.addService(rpcInterface.getSimpleName(),service);
+        return this;
     }
 
 

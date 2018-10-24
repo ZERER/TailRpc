@@ -1,6 +1,7 @@
 package com.tail.rpc.server;
 
-import com.tail.rpc.constant.RpcConfiguration;
+import com.tail.rpc.constant.RpcDefaultConfigurationValue;
+import com.tail.rpc.model.Information;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -11,9 +12,8 @@ import org.apache.zookeeper.CreateMode;
 import java.util.List;
 import java.util.Set;
 
-import static com.tail.rpc.constant.RpcConfiguration.STR_SPILT;
-import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
-import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_CONNECT_TIME_OUT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_SPILT;
 
 /**
  * @author weidong
@@ -22,21 +22,16 @@ import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
 @Slf4j
 public class ServerRegister {
 
-    private final String zkAddr;
-
-    //private final String serverNode;
-
-    private String data;
 
     private CuratorFramework zkClient;
 
-    private ServiceCenter serviceList = ServiceCenter.instance();
+    private final RpcConfiguration configuration;
 
     private final static String SERVER_NAME = "server";
 
 
-    public ServerRegister(String registerAddr) {
-        this.zkAddr = registerAddr;
+    public ServerRegister(RpcConfiguration  configuration) {
+        this.configuration = configuration;
     }
 
 
@@ -47,12 +42,11 @@ public class ServerRegister {
      * @throws Exception
      */
     public void connect() throws Exception {
-        check();
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
         zkClient = CuratorFrameworkFactory
                         .builder()
-                        .connectString(zkAddr)
-                        .namespace(RpcConfiguration.NAME_SPACE)
+                        .connectString(configuration.getZkAddr())
+                        .namespace(RpcDefaultConfigurationValue.NAME_SPACE)
                         .sessionTimeoutMs(ZK_CONNECT_TIME_OUT)
                         .retryPolicy(retryPolicy)
                         .build();
@@ -62,12 +56,19 @@ public class ServerRegister {
 
 
         log.info("zk 正在注册服务");
-        Set<String> serverSet = serviceList.getServiceName();
+        Set<String> serverSet = configuration.getServiceMap().keySet();
         for (String service : serverSet){
+
+            Information data = new Information();
+            data.setId(configuration.getId());
+            data.setAddress(configuration.getServerAddr());
+            data.setRemark(configuration.getRemark());
+            data.setWeight(configuration.getWeight());
+            data.setServerName(configuration.getServerName());
             zkClient.create()
                     .creatingParentsIfNeeded()
                     .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
-                    .forPath(ZK_SPILT+service.split(STR_SPILT)[0]+ZK_SPILT+SERVER_NAME,this.data.getBytes());
+                    .forPath(ZK_SPILT+service+ZK_SPILT+SERVER_NAME,data.toDate());
             log.info("create zookeeper node :{}",service);
         }
 
@@ -82,18 +83,6 @@ public class ServerRegister {
             }
         }
 
-    }
-
-
-
-    private void check() {
-        if (this.data == null){
-            throw new NullPointerException("data");
-        }
-    }
-
-    public void setData(String data){
-        this.data = data;
     }
 
     public void close() {

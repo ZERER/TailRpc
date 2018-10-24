@@ -1,6 +1,6 @@
 package com.tail.rpc.curator;
 
-import com.tail.rpc.constant.RpcConfiguration;
+import com.tail.rpc.constant.RpcDefaultConfigurationValue;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -8,8 +8,8 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.util.List;
 
-import static com.tail.rpc.constant.RpcConfiguration.ZK_ADDR;
-import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_ADDR;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_CONNECT_TIME_OUT;
 import static java.lang.Thread.sleep;
 
 /**
@@ -22,7 +22,7 @@ public class ZKTest {
         CuratorFramework zkClient = CuratorFrameworkFactory
                 .builder()
                 .connectString(ZK_ADDR)
-                .namespace(RpcConfiguration.NAME_SPACE)
+                .namespace(RpcDefaultConfigurationValue.NAME_SPACE)
                 .sessionTimeoutMs(ZK_CONNECT_TIME_OUT)
                 .retryPolicy(retryPolicy)
                 .build();

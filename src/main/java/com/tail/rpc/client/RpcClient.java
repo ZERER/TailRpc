@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.tail.rpc.constant.RpcConfiguration.DEFAULT_SERVER_NAME;
-import static com.tail.rpc.constant.RpcConfiguration.ZK_ADDR;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.DEFAULT_SERVER_NAME;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_ADDR;
 
 /**
  * @author weidong

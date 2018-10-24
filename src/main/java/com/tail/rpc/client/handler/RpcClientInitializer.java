@@ -1,10 +1,9 @@
 package com.tail.rpc.client.handler;
 
+import com.tail.rpc.procotol.RpcEncoder;
 import com.tail.rpc.model.RpcRequest;
 import com.tail.rpc.model.RpcResponse;
 import com.tail.rpc.procotol.RpcDecoder;
-import com.tail.rpc.procotol.RpcEncoder;
-import com.tail.rpc.server.handler.RpcServerHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

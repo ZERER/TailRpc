@@ -1,9 +1,6 @@
 package com.tail.rpc.client.service;
 
-import org.apache.zookeeper.server.quorum.ServerBean;
-
 import java.net.InetSocketAddress;
-import java.sql.Wrapper;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

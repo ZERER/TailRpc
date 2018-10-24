@@ -1,8 +1,8 @@
 package com.tail.rpc.client;
 
-import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.client.service.ServiceBean;
-import com.tail.rpc.constant.RpcConfiguration;
+import com.tail.rpc.client.service.LocalServer;
+import com.tail.rpc.constant.RpcDefaultConfigurationValue;
 import com.tail.rpc.util.SocketAddressUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.tail.rpc.constant.RpcConfiguration.ZK_CONNECT_TIME_OUT;
-import static com.tail.rpc.constant.RpcConfiguration.ZK_SPILT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_CONNECT_TIME_OUT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_SPILT;
 
 /**
  * @author weidong
@@ -42,7 +42,7 @@ public class ClientRegister {
         zkClient = CuratorFrameworkFactory
                 .builder()
                 .connectString(zkAddr)
-                .namespace(RpcConfiguration.NAME_SPACE)
+                .namespace(RpcDefaultConfigurationValue.NAME_SPACE)
                 .sessionTimeoutMs(ZK_CONNECT_TIME_OUT)
                 .retryPolicy(retryPolicy)
                 .build();
