@@ -8,7 +8,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 
 import java.util.List;
 
-import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_ADDR;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.DEFAULT_ZK_ADDR;
 import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_CONNECT_TIME_OUT;
 import static java.lang.Thread.sleep;
 
@@ -21,7 +21,7 @@ public class ZKTest {
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
         CuratorFramework zkClient = CuratorFrameworkFactory
                 .builder()
-                .connectString(ZK_ADDR)
+                .connectString(DEFAULT_ZK_ADDR)
                 .namespace(RpcDefaultConfigurationValue.NAME_SPACE)
                 .sessionTimeoutMs(ZK_CONNECT_TIME_OUT)
                 .retryPolicy(retryPolicy)

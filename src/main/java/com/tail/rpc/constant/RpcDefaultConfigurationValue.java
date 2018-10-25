@@ -12,7 +12,7 @@ public class RpcDefaultConfigurationValue {
 
     //public static final String DEFAULT_RPC_NODE="/default";
 
-    public static final String ZK_ADDR="118.25.45.237:2181";
+    public static final String DEFAULT_ZK_ADDR="118.25.45.237:2181";
 
     public static final int ZK_CONNECT_TIME_OUT = 15 * 1000;
 
@@ -27,4 +27,7 @@ public class RpcDefaultConfigurationValue {
     public static final InetSocketAddress DEFAULT_INET_ADDR = new InetSocketAddress("127.0.0.1",8080);
 
     public static final int ZERO = 0;
+
+    public static final long TIME_OUT = 5000;
+
 }

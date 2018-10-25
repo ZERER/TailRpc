@@ -2,11 +2,11 @@ package com.tail.rpc.client;
 
 import com.tail.rpc.model.RpcRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author weidong
@@ -20,13 +20,13 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
     private RpcConnectManager manager;
 
 
-    public RpcProxyInvoker(Class<T> inter, RpcConnectManager connectManager,long timeOut,TimeUnit unit,String serverName) {
-        this.manager = connectManager;
+    public RpcProxyInvoker(Class<T> inter,RpcConfiguration configuration,String serverName) {
+        this.manager = configuration.getConnectManager();
         this.request.setId(UUID.randomUUID().toString());
-        this.request.setTimeOut(timeOut);
-        this.request.setUnit(unit);
+        this.request.setTimeOut(configuration.getTimeOut());
+        this.request.setUnit(configuration.getTimeUnit());
         this.request.setClassName(inter.getSimpleName());
-        this.request.setServerName(serverName);
+        this.request.setServerName(StringUtils.isNotBlank(serverName)?serverName:configuration.getServerName());
     }
 
     @Override

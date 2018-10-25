@@ -1,5 +1,8 @@
 package com.tail.rpc.client.service;
 
+import com.tail.rpc.model.Information;
+import lombok.Getter;
+
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,28 +10,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author weidong
  * @date create in 20:42 2018/10/15
  **/
+@Getter
 public class ServiceBean {
-    private InetSocketAddress inetAddress;
+
+    private final InetSocketAddress inetAddress;
+    private final Integer weight;
+    private final String serverName;
+    private final String remark;
+
 
     private AtomicInteger num = new AtomicInteger(0);
-
-    public ServiceBean(String address,Integer port){
-        inetAddress = new InetSocketAddress(address,port);
+    public ServiceBean(Information information){
+        this.inetAddress = new InetSocketAddress(information.getAddress(),information.getPort());
+        this.remark = information.getRemark();
+        this.serverName = information.getServerName();
+        this.weight = information.getWeight();
+        num.getAndIncrement();
     }
-
-    public ServiceBean(InetSocketAddress inetAddress){
-        this.inetAddress = inetAddress;
-    }
-
-    public InetSocketAddress getInetAddress() {
-        return inetAddress;
-    }
-
-    public int getNum() {
-        return num.get();
-    }
-
-    public int getAndIncrement(){
+    public Integer getAndIncrement(){
         return num.getAndIncrement();
     }
+
 }

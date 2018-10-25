@@ -1,16 +1,15 @@
 package com.tail.rpc.client;
 
 import com.tail.rpc.client.service.ServiceBean;
-import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.constant.RpcDefaultConfigurationValue;
-import com.tail.rpc.util.SocketAddressUtils;
+import com.tail.rpc.model.Information;
+import com.tail.rpc.util.ProtostuffUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +26,6 @@ public class ClientRegister {
 
 
     private CuratorFramework zkClient;
-
-    private LocalServer localServer = LocalServer.instance();
 
     private String zkAddr;
 
@@ -52,26 +49,24 @@ public class ClientRegister {
     /**
      * 从注册中心获取服务
      * @param serverName 注册服务名字
-     * @return
+     * @return 注册服务
      */
     public List<ServiceBean> getServer(String serverName) {
         try {
 
             List<String> serverNames = zkClient.getChildren().forPath(ZK_SPILT+serverName);
-            List<String> values = new ArrayList<>(serverNames.size());
+            List<ServiceBean> values = new ArrayList<>(serverNames.size());
             for (String name : serverNames){
-                values.add(new String(zkClient.getData().forPath(ZK_SPILT+serverName+ZK_SPILT+name)));
+                ServiceBean bean = new ServiceBean(ProtostuffUtils.deserializer(zkClient.getData().forPath(ZK_SPILT+serverName+ZK_SPILT+name),Information.class));
+                values.add(bean);
             }
-
-            List<InetSocketAddress> socketAddresses = SocketAddressUtils.warp(values);
-            return localServer.putServer(serverName, socketAddresses);
+            return values;
         } catch (Exception e) {
             log.error("zookeeper获取服务失败");
             return Collections.emptyList();
 
         }
     }
-
 
     public void close() {
         if (zkClient != null){

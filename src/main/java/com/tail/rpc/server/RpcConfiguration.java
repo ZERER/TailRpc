@@ -31,7 +31,7 @@ public class RpcConfiguration {
      * 注册中心地址,默认为RpcConfiguration.ZK_ADDR
      * @see RpcDefaultConfigurationValue
      */
-    private String zkAddr = ZK_ADDR;
+    private String zkAddr = DEFAULT_ZK_ADDR;
 
     /**
      * 服务提供者地址

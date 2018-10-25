@@ -61,7 +61,8 @@ public class ServerRegister {
 
             Information data = new Information();
             data.setId(configuration.getId());
-            data.setAddress(configuration.getServerAddr());
+            data.setAddress(configuration.getServerAddr().getHostName());
+            data.setPort(configuration.getServerAddr().getPort());
             data.setRemark(configuration.getRemark());
             data.setWeight(configuration.getWeight());
             data.setServerName(configuration.getServerName());
