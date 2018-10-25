@@ -1,6 +1,7 @@
 package com.tail.rpc.client;
 
 import com.tail.rpc.client.service.ServiceBean;
+import com.tail.rpc.client.service.ServiceNodeWatcher;
 import com.tail.rpc.constant.RpcDefaultConfigurationValue;
 import com.tail.rpc.model.Information;
 import com.tail.rpc.util.ProtostuffUtils;
@@ -24,16 +25,15 @@ import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_SPILT;
 @Slf4j
 public class ClientRegister {
 
-
     private CuratorFramework zkClient;
 
-    private String zkAddr;
+    private final ServiceNodeWatcher watcher;
 
     public ClientRegister(String zkAddr){
-        this.zkAddr = zkAddr;
+        connect(zkAddr);
+        watcher = new ServiceNodeWatcher();
     }
-
-    public void connect(){
+    private void connect(String zkAddr){
         //连接zookeeper
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
         zkClient = CuratorFrameworkFactory
@@ -48,18 +48,22 @@ public class ClientRegister {
 
     /**
      * 从注册中心获取服务
+     * @param service 注册服务名字
      * @param serverName 注册服务名字
      * @return 注册服务
      */
-    public List<ServiceBean> getServer(String serverName) {
+    public List<ServiceBean> getServer(String service,String serverName) {
         try {
 
-            List<String> serverNames = zkClient.getChildren().forPath(ZK_SPILT+serverName);
+            List<String> serverNames = zkClient.getChildren().forPath(ZK_SPILT+service);
             List<ServiceBean> values = new ArrayList<>(serverNames.size());
             for (String name : serverNames){
-                ServiceBean bean = new ServiceBean(ProtostuffUtils.deserializer(zkClient.getData().forPath(ZK_SPILT+serverName+ZK_SPILT+name),Information.class));
-                values.add(bean);
+                ServiceBean bean = new ServiceBean(ProtostuffUtils.deserializer(zkClient.getData().forPath(ZK_SPILT+service+ZK_SPILT+name),Information.class));
+                if (bean.getServerName().equals(serverName)) {
+                    values.add(bean);
+                }
             }
+            watcher.watchNode(service);
             return values;
         } catch (Exception e) {
             log.error("zookeeper获取服务失败");
@@ -67,7 +71,6 @@ public class ClientRegister {
 
         }
     }
-
     public void close() {
         if (zkClient != null){
             zkClient.close();

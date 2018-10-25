@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultBalance implements RpcBalance{
 
 
-    private static AtomicInteger index = new AtomicInteger(1);
+    private static AtomicInteger index = new AtomicInteger(0);
 
     @Override
     public InetSocketAddress select(List<ServiceBean> server) {

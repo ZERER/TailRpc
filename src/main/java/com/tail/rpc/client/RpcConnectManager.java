@@ -30,7 +30,7 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 public class RpcConnectManager {
 
-    private RpcBalance balance = new DefaultBalance();
+    private final RpcBalance balance;
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(RpcThreadPool.THREAD_NUM);
 
@@ -40,15 +40,13 @@ public class RpcConnectManager {
 
     private RpcFutureManager futureManager =RpcFutureManager.instance();
 
-    private String serverName;
 
     public RpcConnectManager(ClientRegister zkClient) {
-        this.zkClient = zkClient;
-        zkClient.connect();
+        this(zkClient,new DefaultBalance());
     }
 
     public RpcConnectManager(ClientRegister zkClient,RpcBalance balance) {
-        this(zkClient);
+        this.zkClient = zkClient;
         this.balance = balance;
     }
 
@@ -59,18 +57,19 @@ public class RpcConnectManager {
      * @return 返回结果
      */
     public Object handle(RpcRequest request) throws Exception {
-        return remoteRequest(getServer(request.getClassName()), request).get();
+        return remoteRequest(getServer(request.getClassName(),request.getServerName()), request).get();
     }
 
     /**
      * 查找服务地址，先本地后远程
-     * @param server 请求服务名字
+     * @param service 请求调用接口名称
+     * @param serverName 请求服务名字
      * @return 请求地址
      */
-    private SocketAddress getServer(String server) {
+    private SocketAddress getServer(String service,String serverName) {
         if(localServer.size() > 0){
             //本地查找
-            List<ServiceBean> serverNodes = localServer.getService(server);
+            List<ServiceBean> serverNodes = localServer.getServiceByServerName(service,serverName);
             if (serverNodes.size() > 0){
                 InetSocketAddress serverAddr = balance.select(serverNodes);
                 if (serverAddr != null){
@@ -79,7 +78,7 @@ public class RpcConnectManager {
             }
         }
         //去注册中心查找服务
-        List<ServiceBean> serverNodes = zkClient.getServer(server);
+        List<ServiceBean> serverNodes = zkClient.getServer(service,serverName);
         if (serverNodes.size() > 0){
             InetSocketAddress serverAddr = balance.select(serverNodes);
             if (serverAddr != null){
@@ -87,7 +86,7 @@ public class RpcConnectManager {
             }
         }
 
-        throw new RpcServiceNotFindException(server);
+        throw new RpcServiceNotFindException(service);
     }
 
     /**

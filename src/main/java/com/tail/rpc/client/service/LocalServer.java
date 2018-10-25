@@ -13,13 +13,6 @@ public class LocalServer {
 
     private final Map<String, List<ServiceBean>> serverMap = new ConcurrentHashMap<>();
 
-
-//    public List<ServiceBean> putServer(String serverNode,List<InetSocketAddress> serverAddr){
-//        List<ServiceBean> serviceBeans = wrapToServiceBean(serverAddr);
-//        serverMap.put(serverNode,serviceBeans);
-//        return serviceBeans;
-//    }
-
     public List<ServiceBean> getService(String service){
         return serverMap.get(service);
     }
