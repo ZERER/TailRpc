@@ -42,7 +42,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("server caught exception", cause);
+        log.error("warning... server caught exception", cause);
         ctx.close();
     }
     /**
@@ -80,7 +80,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
             response.setResult(result);
             response.setSuccess(true);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            log.error("处理异常，原因",e.getMessage());
+            log.error("warning... 处理异常，原因",e.getMessage());
             response.setError(e);
             response.setSuccess(false);
         }

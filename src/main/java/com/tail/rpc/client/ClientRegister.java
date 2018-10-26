@@ -31,7 +31,7 @@ public class ClientRegister {
 
     public ClientRegister(String zkAddr){
         connect(zkAddr);
-        watcher = new ServiceNodeWatcher();
+        watcher = new ServiceNodeWatcher(zkClient);
     }
     private void connect(String zkAddr){
         //连接zookeeper
@@ -43,6 +43,7 @@ public class ClientRegister {
                 .sessionTimeoutMs(ZK_CONNECT_TIME_OUT)
                 .retryPolicy(retryPolicy)
                 .build();
+        //start()会阻塞到会话创建成功为止。
         zkClient.start();
     }
 
@@ -66,7 +67,7 @@ public class ClientRegister {
             watcher.watchNode(service);
             return values;
         } catch (Exception e) {
-            log.error("zookeeper获取服务失败");
+            log.error("warning... zookeeper获取服务失败");
             return Collections.emptyList();
 
         }

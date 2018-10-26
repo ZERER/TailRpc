@@ -83,7 +83,7 @@ public class RpcServerBootstrap {
                 }
             }).sync();
         } catch (Exception e) {
-            log.error("服务启动失败,失败原因:{}",e.getMessage());
+            log.error("warning... 服务启动失败,失败原因:{}",e.getMessage());
         } finally {
             stop();
         }

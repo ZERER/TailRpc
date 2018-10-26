@@ -40,7 +40,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("client caught exception", cause);
+        log.error("warning... client caught exception", cause);
         ctx.close();
     }
 

@@ -1,7 +1,11 @@
 package com.tail.rpc.client;
 
+import com.tail.rpc.client.async.Sync;
+import com.tail.rpc.exception.RpcException;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +26,10 @@ public class RpcConfiguration {
      */
     public static final Map<String,RpcConnectManager> ZK_MANAGER = new ConcurrentHashMap<>();
 
+    public static final List<String> ZK_ADDRS = new ArrayList<>();
+
+    private static Sync sync = new Sync();
+
     private long timeOut =  TIME_OUT;
 
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
@@ -30,13 +38,21 @@ public class RpcConfiguration {
 
     private String zkAddr = DEFAULT_ZK_ADDR;
 
+    private RpcConnectManager connectManager;
+
     public RpcConnectManager getConnectManager() {
-        //一个注册中心只会有一个RpcConnectManager 可支持多个
-        RpcConnectManager connectManager = ZK_MANAGER.get(zkAddr);
-        if (connectManager == null) {
-            ClientRegister zk = new ClientRegister(zkAddr);
-            connectManager = new RpcConnectManager(zk);
-            ZK_MANAGER.put(zkAddr, connectManager);
+        if (connectManager == null){
+            sync.acquire(1);
+            try {
+                if (ZK_ADDRS.contains(zkAddr)) {
+                    throw new RpcException("zkaddr 已注册");
+                }
+                connectManager =  new RpcConnectManager(new ClientRegister(zkAddr));
+            } catch (Exception e) {
+
+            } finally {
+                sync.release(1);
+            }
         }
         return connectManager;
     }

@@ -67,7 +67,7 @@ public class RpcConnectManager {
      * @return 请求地址
      */
     private SocketAddress getServer(String service,String serverName) {
-        if(localServer.size() > 0){
+        if(!localServer.isEmpty()){
             //本地查找
             List<ServiceBean> serverNodes = localServer.getServiceByServerName(service,serverName);
             if (serverNodes.size() > 0){
@@ -120,7 +120,7 @@ public class RpcConnectManager {
                 RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
                 handler.send(request);
             } catch (Exception e) {
-                log.error("错误:{}",e.getMessage());
+                log.error("warning... 错误:{}",e.getMessage());
             }
 
         });
