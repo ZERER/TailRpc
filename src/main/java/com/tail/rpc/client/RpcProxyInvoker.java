@@ -14,14 +14,19 @@ import java.util.UUID;
  **/
 @Slf4j
 public class RpcProxyInvoker<T> implements InvocationHandler {
-
-    private RpcRequest request = new RpcRequest();
-
-    private RpcConnectManager manager;
+    /**
+     * 请求体
+     */
+    private final RpcRequest request;
+    /**
+     * 连接管理器
+     */
+    private final RpcConnectManager manager;
 
 
     public RpcProxyInvoker(Class<T> inter,RpcConfiguration configuration,String serverName) {
         this.manager = configuration.getConnectManager();
+        this.request = new RpcRequest();
         this.request.setId(UUID.randomUUID().toString());
         this.request.setTimeOut(configuration.getTimeOut());
         this.request.setUnit(configuration.getTimeUnit());

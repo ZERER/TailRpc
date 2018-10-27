@@ -25,6 +25,9 @@ import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_SPILT;
 @Slf4j
 public class ClientRegister {
 
+    /**
+     * zk客户端
+     */
     private CuratorFramework zkClient;
 
     private final ServiceNodeWatcher watcher;

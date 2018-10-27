@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date Create in 14:26 2018/10/12
  **/
 public class ProtostuffUtils {
+
     private static Map<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
 
     private static <T> Schema<T> getSchema(Class<T> clazz) {
@@ -29,10 +30,10 @@ public class ProtostuffUtils {
     }
 
     /**
-     * 序列化
+     * 序列化byte[]数组
      *
-     * @param obj
-     * @return
+     * @param obj 序列化对象
+     * @return 字节数组
      */
     public static <T> byte[] serializer(T obj) {
         @SuppressWarnings("unchecked")
@@ -51,13 +52,13 @@ public class ProtostuffUtils {
     /**
      * 反序列化
      *
-     * @param data
-     * @param clazz
-     * @return
+     * @param data 字节数组
+     * @param clazz 反序列化类
+     * @return 序列化的对象
      */
     public static <T> T deserializer(byte[] data, Class<T> clazz) {
         try {
-            T obj = clazz.newInstance();
+            T obj = clazz.getDeclaredConstructor().newInstance();
             Schema<T> schema = getSchema(clazz);
             ProtostuffIOUtil.mergeFrom(data, obj, schema);
             return obj;

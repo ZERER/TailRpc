@@ -1,6 +1,7 @@
 package com.tail.rpc.client;
 
 
+import com.tail.rpc.client.balance.RpcBalance;
 import com.tail.rpc.thread.RpcThreadPool;
 
 import java.io.Closeable;
@@ -36,6 +37,16 @@ public class RpcClient implements Closeable {
 
     }
 
+    public RpcClient setBanlance(RpcBalance banlance){
+        this.configuration.setBalance(banlance);
+        return this;
+    }
+
+    public RpcClient setZkAddr(String zkAddr){
+        this.configuration.setZkAddr(zkAddr);
+        return this;
+    }
+
     public RpcClient setRequestTimeOut(long timeOut,TimeUnit unit) {
         this.configuration.setTimeOut( timeOut);
         this.configuration.setTimeUnit( unit);
@@ -53,21 +64,21 @@ public class RpcClient implements Closeable {
 
 
     public <T> T create(Class<T> inter){
-        return createByServerName(inter,null);
+        return create(inter,null);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T createByServerName(Class<T> inter,String serverName){
+    public <T> T create(Class<T> inter,String serverName){
         return (T) Proxy.newProxyInstance(
                 inter.getClassLoader(),
                 new Class<?>[]{inter},
-                new RpcProxyInvoker<>(inter,configuration,null));
+                new RpcProxyInvoker<>(inter,configuration,serverName));
     }
 
 
     @Override
     public void close(){
-        RpcConfiguration.ZK_MANAGER.forEach((zk,manage)-> manage.close());
+        configuration.getConnectManager().close();
         EXECUTOR.shutdown();
     }
 }

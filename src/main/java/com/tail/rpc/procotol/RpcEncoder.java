@@ -12,6 +12,9 @@ import io.netty.handler.codec.MessageToByteEncoder;
  **/
 public class RpcEncoder extends MessageToByteEncoder{
 
+    /**
+     * 编码的类
+     */
     private Class<?> encoderClass;
 
     public RpcEncoder(Class<?> rpcResponseClass) {

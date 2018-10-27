@@ -10,9 +10,7 @@ public class RpcDefaultConfigurationValue {
 
     public static final String NAME_SPACE = "tail";
 
-    //public static final String DEFAULT_RPC_NODE="/default";
-
-    public static final String DEFAULT_ZK_ADDR="118.25.45.237:2181";
+    public static final String DEFAULT_ZK_ADDRESS ="127.0.0.1";
 
     public static final int ZK_CONNECT_TIME_OUT = 15 * 1000;
 

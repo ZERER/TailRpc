@@ -9,7 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class RpcFutureManager {
 
-    public ConcurrentHashMap<String,RpcFuture> resultMap = new ConcurrentHashMap<>();
+    /**
+     * 管理所有的rpcfuture
+     */
+    private ConcurrentHashMap<String,RpcFuture> resultMap = new ConcurrentHashMap<>();
 
     public RpcFuture getRpcFuture(String requestId){
         return resultMap.get(requestId);

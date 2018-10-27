@@ -10,5 +10,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RpcService {
+    /**
+     * @return 发布的服务接口
+     */
     Class<?> Value() default Class.class;
 }

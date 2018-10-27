@@ -13,11 +13,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultBalance implements RpcBalance{
 
 
+    /**
+     * 按轮询的方式进行负载均衡
+     */
     private static AtomicInteger index = new AtomicInteger(0);
 
     @Override
     public InetSocketAddress select(List<ServiceBean> server) {
-        return server.get(index.getAndIncrement() % server.size()).getInetAddress();
+        ServiceBean service = server.get(index.getAndIncrement() % server.size());
+        service.getAndIncrement();
+        return service.getInetAddress();
     }
 
 

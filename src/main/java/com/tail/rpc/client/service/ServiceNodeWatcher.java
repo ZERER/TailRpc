@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache.StartMode;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,11 +27,25 @@ import static com.tail.rpc.constant.RpcDefaultConfigurationValue.ZK_SPILT;
  **/
 @Slf4j
 public class ServiceNodeWatcher {
-
+    /**
+     * 已经注册事件的节点
+     */
     private final List<String> alreadyWatchNodes = new LinkedList<>();
+    /**
+     * zookeeper客户端
+     */
     private final CuratorFramework zkClient;
+    /**
+     * 本地服务中心
+     */
     private LocalServer localServer = LocalServer.instance();
+    /**
+     * 注册事件的线程池
+     */
     private final static ThreadPoolExecutor EXECUTOR = RpcThreadPool.getWatchDefaultExecutor();
+    /**
+     * 已经注册事件的节点管理
+     */
     private final Map<String, PathChildrenCache> watcher = new ConcurrentHashMap<>();
 
     public ServiceNodeWatcher(CuratorFramework zkClient) {
@@ -73,27 +88,15 @@ public class ServiceNodeWatcher {
         try {
             childrenCache.start(StartMode.POST_INITIALIZED_EVENT);
             childrenCache.getListenable().addListener((client, event) -> {
-                final Information information = ProtostuffUtils.deserializer(event.getData().getData(), Information.class);
-                final String service = event.getData().getPath().split(ZK_SPILT)[1];
                 switch (event.getType()) {
                     case CHILD_ADDED:
-                        ServiceBean addService = new ServiceBean(information);
-                        localServer.addService(service, addService);
-                        log.info("节点:{}新增子节点信息:{}", service, GsonUtils.to(information));
+                        addedEventOperation(event);
                         break;
                     case CHILD_UPDATED:
-                        //todo 更新节点 暂无操作
+                        updatedEventOperation(event);
                         break;
                     case CHILD_REMOVED:
-                        ServiceBean delService = new ServiceBean(information);
-                        localServer.delService(service, delService);
-                        log.info("节点:{}删除节点信息:{}", service, GsonUtils.to(information));
-                        if (localServer.serviceIsEmpty(service)) {
-                            //todo 判断该节点下面还有没有子节点，没有应该移除监听
-                            cancalWatch(service);
-                        }
-
-
+                        removedEventOperation(event);
                         break;
                     default:
                         break;
@@ -102,6 +105,29 @@ public class ServiceNodeWatcher {
         } catch (Exception e) {
             log.error("warning... 监听节点:{}失败", watchNode);
         }
+    }
+
+    private void updatedEventOperation(PathChildrenCacheEvent event) {
+        //todo 更新节点 暂无操作
+    }
+
+    private void removedEventOperation(PathChildrenCacheEvent event) {
+        final Information information = ProtostuffUtils.deserializer(event.getData().getData(), Information.class);
+        final String service = event.getData().getPath().split(ZK_SPILT)[1];
+        ServiceBean delService = new ServiceBean(information);
+        localServer.delService(service, delService);
+        log.info("节点:{}删除节点信息:{}", service, GsonUtils.to(information));
+        if (localServer.serviceIsEmpty(service)) {
+            cancalWatch(service);
+        }
+    }
+
+    private void addedEventOperation(PathChildrenCacheEvent event) {
+        final Information information = ProtostuffUtils.deserializer(event.getData().getData(), Information.class);
+        final String service = event.getData().getPath().split(ZK_SPILT)[1];
+        ServiceBean addService = new ServiceBean(information);
+        localServer.addService(service, addService);
+        log.info("节点:{}新增子节点信息:{}", service, GsonUtils.to(information));
     }
 
     private void cancalWatch(String service) {

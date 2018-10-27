@@ -1,18 +1,16 @@
 package com.tail.rpc.client;
 
 import com.tail.rpc.client.async.Sync;
+import com.tail.rpc.client.balance.DefaultBalance;
+import com.tail.rpc.client.balance.RpcBalance;
 import com.tail.rpc.exception.RpcException;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static com.tail.rpc.constant.RpcDefaultConfigurationValue.DEFAULT_SERVER_NAME;
-import static com.tail.rpc.constant.RpcDefaultConfigurationValue.DEFAULT_ZK_ADDR;
-import static com.tail.rpc.constant.RpcDefaultConfigurationValue.TIME_OUT;
+import static com.tail.rpc.constant.RpcDefaultConfigurationValue.*;
 
 /**
  * @author weidong
@@ -22,23 +20,37 @@ import static com.tail.rpc.constant.RpcDefaultConfigurationValue.TIME_OUT;
 public class RpcConfiguration {
 
     /**
-     * 保证一个注册中心一个Connect
+     * 已连接的zookeeper地址
      */
-    public static final Map<String,RpcConnectManager> ZK_MANAGER = new ConcurrentHashMap<>();
-
     public static final List<String> ZK_ADDRS = new ArrayList<>();
-
-    private static Sync sync = new Sync();
-
+    /**
+     * 同步组件
+     */
+    private static Sync sync = new Sync(false);
+    /**
+     * 超时时长
+     */
     private long timeOut =  TIME_OUT;
-
+    /**
+     * 时长单位
+     */
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-
+    /**
+     * 生产者名字
+     */
     private String serverName = DEFAULT_SERVER_NAME;
-
-    private String zkAddr = DEFAULT_ZK_ADDR;
-
+    /**
+     * zookeeper地址
+     */
+    private String zkAddr = DEFAULT_ZK_ADDRESS;
+    /**
+     * 连接管理器
+     */
     private RpcConnectManager connectManager;
+    /**
+     * 负载均衡策略
+     */
+    private RpcBalance balance = new DefaultBalance();
 
     public RpcConnectManager getConnectManager() {
         if (connectManager == null){
@@ -47,7 +59,7 @@ public class RpcConfiguration {
                 if (ZK_ADDRS.contains(zkAddr)) {
                     throw new RpcException("zkaddr 已注册");
                 }
-                connectManager =  new RpcConnectManager(new ClientRegister(zkAddr));
+                connectManager =  new RpcConnectManager(new ClientRegister(zkAddr),balance);
             } catch (Exception e) {
 
             } finally {

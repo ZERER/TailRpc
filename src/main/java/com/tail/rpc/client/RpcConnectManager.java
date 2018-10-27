@@ -2,14 +2,13 @@ package com.tail.rpc.client;
 
 import com.tail.rpc.client.async.RpcFuture;
 import com.tail.rpc.client.async.RpcFutureManager;
-import com.tail.rpc.client.balance.DefaultBalance;
 import com.tail.rpc.client.balance.RpcBalance;
 import com.tail.rpc.client.handler.RpcClientHandler;
 import com.tail.rpc.client.handler.RpcClientInitializer;
+import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.client.service.ServiceBean;
 import com.tail.rpc.exception.RpcServiceNotFindException;
 import com.tail.rpc.model.RpcRequest;
-import com.tail.rpc.client.service.LocalServer;
 import com.tail.rpc.thread.RpcThreadPool;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -30,23 +29,27 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 public class RpcConnectManager {
 
+    /**
+     *负载均衡策略
+     */
     private final RpcBalance balance;
+    /**
+     * 异步组件管理器
+     */
+    private RpcFutureManager futureManager =RpcFutureManager.instance();
+    /**
+     * zk客户端
+     */
+    private  ClientRegister rpcClient;
+    /**
+     * 本地服务中心
+     */
+    private LocalServer localServer = LocalServer.instance();
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(RpcThreadPool.THREAD_NUM);
 
-    private  ClientRegister zkClient;
-
-    private LocalServer localServer = LocalServer.instance();
-
-    private RpcFutureManager futureManager =RpcFutureManager.instance();
-
-
-    public RpcConnectManager(ClientRegister zkClient) {
-        this(zkClient,new DefaultBalance());
-    }
-
-    public RpcConnectManager(ClientRegister zkClient,RpcBalance balance) {
-        this.zkClient = zkClient;
+    public RpcConnectManager(ClientRegister rpcClient,RpcBalance balance) {
+        this.rpcClient = rpcClient;
         this.balance = balance;
     }
 
@@ -78,7 +81,7 @@ public class RpcConnectManager {
             }
         }
         //去注册中心查找服务
-        List<ServiceBean> serverNodes = zkClient.getServer(service,serverName);
+        List<ServiceBean> serverNodes = rpcClient.getServer(service,serverName);
         if (serverNodes.size() > 0){
             InetSocketAddress serverAddr = balance.select(serverNodes);
             if (serverAddr != null){
@@ -132,8 +135,8 @@ public class RpcConnectManager {
             eventLoopGroup.shutdownGracefully();
         }
 
-        if (zkClient != null){
-            zkClient.close();
+        if (rpcClient != null){
+            rpcClient.close();
         }
     }
 

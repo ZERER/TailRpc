@@ -14,10 +14,17 @@ import java.util.List;
  **/
 public class RpcDecoder extends ByteToMessageDecoder {
 
+    /**
+     * 解码的类
+     */
     private Class<?> decoderClass;
-
+    /**
+     * int的字节大小
+     */
     private static final int INTEGER_SIZE = 4;
-
+    /**
+     * 数字零
+     */
     private static final int ZERO_SIZE = 0;
 
     public RpcDecoder(Class<?> decoderClass) {
