@@ -1,5 +1,7 @@
 package com.tail.rpc.client.async;
 
+import com.tail.rpc.client.async.function.CompletedFunction;
+import com.tail.rpc.client.async.function.ExceptionFunction;
 import com.tail.rpc.exception.RpcException;
 import com.tail.rpc.exception.RpcTimeOutException;
 import com.tail.rpc.model.RpcRequest;
@@ -10,8 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * @author weidong
@@ -40,9 +40,9 @@ public class RpcFuture implements Future<Object> {
      */
     private final Sync sync;
 
-    private List<BiConsumer<Object,Exception>> completeCallBacks;
+    private List<CompletedFunction> completeCallBacks;
 
-    private Consumer<Exception> onErrorCallBack;
+    private ExceptionFunction onErrorCallBack;
 
     public RpcFuture(RpcRequest request) {
         status = RpcRequestStatus.RUNNING;
@@ -81,7 +81,7 @@ public class RpcFuture implements Future<Object> {
             throw new InterruptedException("该请求已经取消");
         }
 
-        if (status.equals(RpcRequestStatus.RUNNING) || sync.tryAcquireNanos(1, unit.toNanos(timeout))) {
+        if (status.equals(RpcRequestStatus.FINISHED) || sync.tryAcquireNanos(1, unit.toNanos(timeout))) {
             status = RpcRequestStatus.FINISHED;
             if (response.isSuccess()) {
                 return this.response.getResult();
@@ -97,39 +97,41 @@ public class RpcFuture implements Future<Object> {
     public void setResponse(RpcResponse response) {
         log.info("requestId = {} finish", response.getId());
         this.response = response;
-        sync.release(1);
+
         callCompelete();
-        if (!response.isSuccess()){
+        if (!response.isSuccess()) {
             callOnError();
         }
+        //释放同步状态
+        sync.release(1);
     }
 
     private void callOnError() {
-        if (onErrorCallBack==null){
+        if (onErrorCallBack == null) {
             return;
         }
-        onErrorCallBack.accept(response.getError());
+        onErrorCallBack.onError(response.getError());
     }
 
     private void callCompelete() {
-        if (completeCallBacks == null){
+        if (completeCallBacks == null) {
             return;
         }
-        final List<BiConsumer<Object,Exception>> callBacks = new LinkedList<>(completeCallBacks);
-        callBacks.forEach(c -> c.accept(response.getResult(),response.getError()));
+        final List<CompletedFunction> callBacks = new LinkedList<>(completeCallBacks);
+        callBacks.forEach(c -> c.complete(response.getResult(), response.getError()));
     }
 
 
-    public RpcFuture compeleted(BiConsumer<Object,Exception> complete) {
-        if (completeCallBacks == null){
+    public RpcFuture completedListener(CompletedFunction complete) {
+        if (completeCallBacks == null) {
             completeCallBacks = new LinkedList<>();
         }
         completeCallBacks.add(complete);
         return this;
     }
 
-    public RpcFuture onError(Consumer<Exception> e) {
-            onErrorCallBack = e;
+    public RpcFuture onErrorListener(ExceptionFunction e) {
+        onErrorCallBack = e;
         return this;
     }
 }

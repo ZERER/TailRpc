@@ -1,6 +1,7 @@
-package com.tail.rpc.server;
+package com.tail.rpc.test.server;
 
-import com.tail.rpc.service.HelloServiceImpl;
+import com.tail.rpc.server.RpcServerBootstrap;
+import com.tail.rpc.test.service.HelloServiceImpl;
 import org.junit.Test;
 
 /**
@@ -28,4 +29,13 @@ public class ServerBootstrapTest {
                 .start();
     }
 
+    @Test
+    public void testStartHelloServiceByServerName() {
+        RpcServerBootstrap bootstrap = new RpcServerBootstrap();
+        bootstrap.register("118.25.45.237:2181")
+                .addService(new HelloServiceImpl())
+                .serverAddr("127.0.0.1:8080")
+                .serverName("test")
+                .start();
+    }
 }

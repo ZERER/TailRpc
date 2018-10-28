@@ -1,4 +1,4 @@
-package com.tail.rpc.service;
+package com.tail.rpc.test.service;
 
 import com.tail.rpc.annotation.RpcService;
 

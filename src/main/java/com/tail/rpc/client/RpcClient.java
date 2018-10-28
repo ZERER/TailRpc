@@ -1,12 +1,12 @@
 package com.tail.rpc.client;
 
 
+import com.tail.rpc.client.async.proxy.AsyncProxy;
+import com.tail.rpc.client.async.proxy.AsyncProxyImpl;
 import com.tail.rpc.client.balance.RpcBalance;
-import com.tail.rpc.thread.RpcThreadPool;
 
 import java.io.Closeable;
 import java.lang.reflect.Proxy;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,40 +16,38 @@ import java.util.concurrent.TimeUnit;
 public class RpcClient implements Closeable {
 
 
-    private final static ThreadPoolExecutor EXECUTOR = RpcThreadPool.getClientDefaultExecutor();
-
     private final RpcConfiguration configuration;
 
-    public RpcClient(String zkAddr){
+    public RpcClient(String zkAddr) {
         this();
         configuration.setZkAddr(zkAddr);
     }
 
-    public RpcClient(){
+    public RpcClient() {
         this.configuration = new RpcConfiguration();
     }
 
-    public RpcClient(RpcConfiguration configuration){
-        if (configuration == null){
+    public RpcClient(RpcConfiguration configuration) {
+        if (configuration == null) {
             throw new NullPointerException("configuration");
         }
-       this.configuration = configuration;
+        this.configuration = configuration;
 
     }
 
-    public RpcClient setBanlance(RpcBalance banlance){
+    public RpcClient setBanlance(RpcBalance banlance) {
         this.configuration.setBalance(banlance);
         return this;
     }
 
-    public RpcClient setZkAddr(String zkAddr){
+    public RpcClient setZkAddr(String zkAddr) {
         this.configuration.setZkAddr(zkAddr);
         return this;
     }
 
-    public RpcClient setRequestTimeOut(long timeOut,TimeUnit unit) {
-        this.configuration.setTimeOut( timeOut);
-        this.configuration.setTimeUnit( unit);
+    public RpcClient setRequestTimeOut(long timeOut, TimeUnit unit) {
+        this.configuration.setTimeOut(timeOut);
+        this.configuration.setTimeUnit(unit);
         return this;
     }
 
@@ -58,27 +56,25 @@ public class RpcClient implements Closeable {
         return this;
     }
 
-    public static void submit(Runnable runnable){
-        EXECUTOR.submit(runnable);
-    }
 
-
-    public <T> T create(Class<T> inter){
-        return create(inter,null);
+    public <T> T create(Class<T> inter) {
+        return create(inter, null);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T create(Class<T> inter,String serverName){
+    public <T> T create(Class<T> tClass, String serverName) {
         return (T) Proxy.newProxyInstance(
-                inter.getClassLoader(),
-                new Class<?>[]{inter},
-                new RpcProxyInvoker<>(inter,configuration,serverName));
+                tClass.getClassLoader(),
+                new Class<?>[]{tClass},
+                new RpcProxyInvoker<>(tClass, configuration, serverName));
     }
 
+    public AsyncProxy createAsyncProxy(Class<?> tClass) {
+        return new AsyncProxyImpl(tClass, configuration);
+    }
 
     @Override
-    public void close(){
+    public void close() {
         configuration.getConnectManager().close();
-        EXECUTOR.shutdown();
     }
 }

@@ -1,4 +1,4 @@
-package com.tail.rpc.curator;
+package com.tail.rpc.test.curator;
 
 import org.junit.Test;
 

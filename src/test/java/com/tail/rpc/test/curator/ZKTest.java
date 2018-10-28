@@ -1,4 +1,4 @@
-package com.tail.rpc.curator;
+package com.tail.rpc.test.curator;
 
 import com.tail.rpc.constant.RpcDefaultConfigurationValue;
 import org.apache.curator.RetryPolicy;

@@ -42,5 +42,5 @@ public class RpcRequest {
     /**
      * 请求时间单位
      */
-    private TimeUnit unit = TimeUnit.MILLISECONDS;
+    private TimeUnit unit;
 }

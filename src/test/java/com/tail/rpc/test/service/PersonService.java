@@ -1,4 +1,4 @@
-package com.tail.rpc.service;
+package com.tail.rpc.test.service;
 
 /**
  * @author weidong
@@ -6,6 +6,6 @@ package com.tail.rpc.service;
  **/
 public interface PersonService {
 
-    public Integer add(int a,int b);
+    public Integer add(int a, int b);
 
 }

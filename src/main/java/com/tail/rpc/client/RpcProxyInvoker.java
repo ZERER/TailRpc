@@ -40,7 +40,7 @@ public class RpcProxyInvoker<T> implements InvocationHandler {
         this.request.setParameterTypes(method.getParameterTypes());
         this.request.setParameters(args);
         log.info("调用rpc服务,请求参数:{}",request.toString());
-        return manager.handle(request);
+        return manager.handle(request).get();
     }
 
 

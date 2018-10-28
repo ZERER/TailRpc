@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author weidong
@@ -45,6 +46,10 @@ public class RpcConnectManager {
      * 本地服务中心
      */
     private LocalServer localServer = LocalServer.instance();
+    /**
+     * 线程池
+     */
+    private final static ThreadPoolExecutor EXECUTOR = RpcThreadPool.getClientDefaultExecutor();
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(RpcThreadPool.THREAD_NUM);
 
@@ -59,8 +64,8 @@ public class RpcConnectManager {
      * @param request rpc请求体
      * @return 返回结果
      */
-    public Object handle(RpcRequest request) throws Exception {
-        return remoteRequest(getServer(request.getClassName(),request.getServerName()), request).get();
+    public RpcFuture handle(RpcRequest request){
+        return remoteRequest(getServer(request.getClassName(),request.getServerName()), request);
     }
 
     /**
@@ -102,7 +107,7 @@ public class RpcConnectManager {
         RpcFuture future = new RpcFuture(request);
         futureManager.putRpcFuture(request.getId(),future);
 
-        RpcClient.submit(() -> {
+        EXECUTOR.submit(() -> {
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
             try {
@@ -138,6 +143,7 @@ public class RpcConnectManager {
         if (rpcClient != null){
             rpcClient.close();
         }
+        EXECUTOR.shutdown();
     }
 
 }

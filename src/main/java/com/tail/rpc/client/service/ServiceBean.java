@@ -37,11 +37,14 @@ public class ServiceBean {
         if (this == o) {return true;}
         if (o == null || getClass() != o.getClass()) {return false;}
         ServiceBean that = (ServiceBean) o;
-        return Objects.equals(inetAddress, that.inetAddress) && Objects.equals(weight, that.weight) && Objects.equals(serverName, that.serverName) && Objects.equals(remark, that.remark) && Objects.equals(num, that.num);
+        return this.getInetAddress().equals(that.getInetAddress());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(inetAddress, weight, serverName, remark, num);
     }
+
+
 }
+
