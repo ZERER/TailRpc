@@ -7,7 +7,7 @@ import com.tail.rpc.annotation.RpcService;
  * @author: weidong
  * @date: create in 10:19 2018/10/13
  **/
-@RpcService
+@RpcService(Value = HelloService.class)
 public class HelloServiceImpl implements HelloService {
     @Override
     public String hello(Integer x) {

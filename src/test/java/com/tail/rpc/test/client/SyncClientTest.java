@@ -14,7 +14,7 @@ public class SyncClientTest {
 
     @Test
     public void testRequest() throws InterruptedException {
-        RpcClient client = new RpcClient("118.25.45.237:2181")
+        RpcClient client = new RpcClient("192.168.88.12:2181")
                 .setRequestTimeOut(10, TimeUnit.SECONDS);
         HelloService service = client.create(HelloService.class);
         String result = service.hello(1000);
@@ -25,7 +25,7 @@ public class SyncClientTest {
 
     @Test
     public void testRequestByServer() throws InterruptedException {
-        RpcClient client = new RpcClient("118.25.45.237:2181")
+        RpcClient client = new RpcClient("192.168.88.12:2181")
                 .setRequestTimeOut(10, TimeUnit.SECONDS);
         HelloService service = client.create(HelloService.class,"test");
         String result = service.hello(1000);

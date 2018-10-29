@@ -14,7 +14,7 @@ public class ServerBootstrapTest {
     @Test
     public void testStartHelloService() {
         RpcServerBootstrap bootstrap = new RpcServerBootstrap();
-        bootstrap.register("118.25.45.237:2181")
+        bootstrap.register("192.168.88.12:2181")
                 .addService(new HelloServiceImpl())
                 .serverAddr("127.0.0.1:8080")
                 .start();
@@ -23,7 +23,7 @@ public class ServerBootstrapTest {
     @Test
     public void testStartHelloServiceTwo() {
         RpcServerBootstrap bootstrap = new RpcServerBootstrap();
-        bootstrap.register("118.25.45.237:2181")
+        bootstrap.register("192.168.88.12:2181")
                 .addService(new HelloServiceImpl())
                 .serverAddr("127.0.0.1:8081")
                 .start();
@@ -32,7 +32,7 @@ public class ServerBootstrapTest {
     @Test
     public void testStartHelloServiceByServerName() {
         RpcServerBootstrap bootstrap = new RpcServerBootstrap();
-        bootstrap.register("118.25.45.237:2181")
+        bootstrap.register("192.168.88.12:2181")
                 .addService(new HelloServiceImpl())
                 .serverAddr("127.0.0.1:8080")
                 .serverName("test")

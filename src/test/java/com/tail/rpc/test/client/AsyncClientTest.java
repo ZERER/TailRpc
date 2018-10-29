@@ -20,7 +20,7 @@ public class AsyncClientTest {
 
     @Before
     public void before(){
-        client = new RpcClient("118.25.45.237:2181")
+        client = new RpcClient("192.168.88.12:2181")
                 .setRequestTimeOut(10, TimeUnit.SECONDS);
     }
 

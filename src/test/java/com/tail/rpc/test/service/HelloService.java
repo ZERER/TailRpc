@@ -9,6 +9,4 @@ public interface HelloService {
 
     String hello(Integer x);
 
-
-
 }

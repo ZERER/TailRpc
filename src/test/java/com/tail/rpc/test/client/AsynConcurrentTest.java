@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  **/
 public class AsynConcurrentTest {
 
-    final RpcClient client  = new RpcClient("118.25.45.237:2181");
+    final RpcClient client  = new RpcClient("192.168.88.12:2181");
     ThreadPoolExecutor pool = RpcThreadPool.getExecutor(10, -1, "ConcurrentThreadPool");
     @Test
     public void testConcurrent() throws ExecutionException, InterruptedException {
