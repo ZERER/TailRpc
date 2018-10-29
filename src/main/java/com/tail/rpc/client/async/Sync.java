@@ -27,6 +27,7 @@ public class Sync extends AbstractQueuedSynchronizer {
         if (getState() == 0){
             return false;
         }
+        compareAndSetState(1,0);
         return true;
     }
 

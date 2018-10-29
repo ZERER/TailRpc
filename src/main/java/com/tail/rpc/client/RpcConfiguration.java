@@ -56,10 +56,12 @@ public class RpcConfiguration {
         if (connectManager == null){
             sync.acquire(1);
             try {
-                if (ZK_ADDRS.contains(zkAddr)) {
-                    throw new RpcException("zkaddr 已注册");
+                if (connectManager == null) {
+                    if (ZK_ADDRS.contains(zkAddr)) {
+                        throw new RpcException("zkaddr 已注册");
+                    }
+                    connectManager = new RpcConnectManager(new ClientRegister(zkAddr), balance);
                 }
-                connectManager =  new RpcConnectManager(new ClientRegister(zkAddr),balance);
             } catch (Exception e) {
 
             } finally {

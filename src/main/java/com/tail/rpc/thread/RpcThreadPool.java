@@ -21,7 +21,7 @@ public class RpcThreadPool {
      * @param queues 队列容量
      * @return Executor
      */
-    private static ThreadPoolExecutor getExecutor(int threads, int queues,String rpcThreadName) {
+    public static ThreadPoolExecutor getExecutor(int threads, int queues,String rpcThreadName) {
         return new ThreadPoolExecutor(threads, threads,
                 0, TimeUnit.MILLISECONDS,
                 queues < 0 ? new LinkedBlockingQueue<>() : new LinkedBlockingQueue<>(queues),

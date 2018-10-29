@@ -13,6 +13,6 @@ public class HelloServiceImpl implements HelloService {
     public String hello(Integer x) {
 
         System.out.println("hello " + x);
-        return "RPC Server";
+        return "RPC Server :" + x;
     }
 }

@@ -18,6 +18,7 @@ public class RpcClient implements Closeable {
 
     private final RpcConfiguration configuration;
 
+
     public RpcClient(String zkAddr) {
         this();
         configuration.setZkAddr(zkAddr);
@@ -34,6 +35,8 @@ public class RpcClient implements Closeable {
         this.configuration = configuration;
 
     }
+
+
 
     public RpcClient setBanlance(RpcBalance banlance) {
         this.configuration.setBalance(banlance);
